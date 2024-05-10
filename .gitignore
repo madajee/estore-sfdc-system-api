@@ -6,4 +6,4 @@ target
 .mule/**/*
 .DS_Store
 velocity.log
-.settinggs
+.settings
