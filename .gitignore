@@ -1,0 +1,9 @@
+target
+.vscode
+.tooling-project
+.mule
+.mule/**
+.mule/**/*
+.DS_Store
+velocity.log
+.settinggs

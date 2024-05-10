@@ -1,0 +1,31 @@
+#%RAML 1.0
+title: estore-sfdc-system-api
+
+/ping:
+  get:
+    description: ping
+    responses:
+      200:
+        body:
+          application/json:
+            type: object
+            examples:
+              example1: !include examples/ping-response.raml
+
+/lead:
+  post:
+    description: create lead
+    body:
+        application/json:
+          example: |
+            {
+              "name": "John Doe Atlanta",
+              "leadsource": "web"
+            }
+    responses:
+      200:
+        body:
+          application/json:
+            type: object
+            examples:
+              example1: !include examples/create-lead-response.raml
