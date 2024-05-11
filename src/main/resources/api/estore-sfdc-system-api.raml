@@ -29,3 +29,24 @@ title: estore-sfdc-system-api
             type: object
             examples:
               example1: !include examples/create-lead-response.raml
+  get:
+     queryParameters: 
+      leadname:
+        description: leadname
+        type: string
+        required: true
+  delete:
+     queryParameters: 
+      leadname:
+        description: leadname
+        type: string
+        required: true
+  /{Id}:
+    get:
+      description: retrieve lead by Id
+      responses:
+        200:
+          body:
+            application/json:
+    
+
