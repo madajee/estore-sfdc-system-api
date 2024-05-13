@@ -105,21 +105,20 @@ output application/json
         </ee:transform>
     </flow>
     <flow name="post:\lead:application\json:estore-sfdc-system-api-config">
-        		<ee:transform doc:name="Transform Message" doc:id="c0b4697e-2b32-4a30-aebe-dddfd511560b" >
+        <ee:transform doc:name="Transform Message" doc:id="cce73732-b2e2-4ea1-aa39-ec9006efe3e1" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
 ---
-[{
-		FirstName: "JohnAtlanta",
-		LastName: "Doe",
-		Company: "AtlantaProducts",
-		"Status": "Open"
-	}
-]]]></ee:set-payload>
+payload map() -> {
+	"FirstName": $.firstname,
+	"LastName": $.lastname,
+	"Company": $.company,
+	"Status": $.status
+}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-        <salesforce:create type="Lead" doc:name="Create" doc:id="f6060627-8f62-4359-a7e3-e8520876cbdd" config-ref="Salesforce_Config"/>
+		<salesforce:create type="Lead" doc:name="Create" doc:id="f6060627-8f62-4359-a7e3-e8520876cbdd" config-ref="Salesforce_Config"/>
 		 <logger level="INFO" doc:name="Logger" doc:id="065c7876-4dcc-4553-9bf1-5d3a55011b95" message="#[output application/json --- payload]" />
 		<ee:transform doc:name="Transform Message">
             <ee:message>
@@ -127,10 +126,18 @@ output application/java
 output application/json
 ---
 {
-  message: "create lead successful"
+  response: {
+  	  message: "create lead successful",
+  	  createdlead: payload.items map() -> {
+  	  	id: $.id,
+  	  	status: $.successful
+  	  }
+  }
+
 } as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
             </ee:message>
         </ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="97c65e67-df93-448b-ab0b-c8340813e69d" message="#[output application/json --- payload]"/>
     </flow>
     <flow name="get:\lead\(Id):estore-sfdc-system-api-config">
         <ee:transform doc:name="Transform Message">
@@ -140,7 +147,7 @@ output application/json
         </ee:transform>
         <logger level="INFO" doc:name="Logger" doc:id="cb8f79ee-f916-44b5-b879-cc8d4542eca7" message="#[vars.Id]" />
         <salesforce:query doc:name="Lead" doc:id="95c69ae6-38e9-4986-b7d5-8ddccb88e14f" config-ref="Salesforce_Config">
-            <salesforce:salesforce-query><![CDATA[SELECT ID, Name FROM lead where name = ':Id']]></salesforce:salesforce-query>
+            <salesforce:salesforce-query><![CDATA[${leadbyid.select}]]></salesforce:salesforce-query>
             <salesforce:parameters><![CDATA[#[output application/java
 ---
 {
@@ -158,20 +165,45 @@ payload]]></ee:set-payload>
         </ee:transform>
     </flow>
     <flow name="get:\lead:estore-sfdc-system-api-config">
-        <ee:transform doc:name="Transform Message">
-            <ee:variables>
-                <ee:set-variable variableName="leadname">attributes.queryParams.'leadname'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <logger level="INFO" doc:name="Logger" doc:id="8353b233-f1cc-44c7-8f1d-b2f62c249473" message="#[vars.leadname]" />
-        <salesforce:query doc:name="Lead" doc:id="e79970b3-b775-4e2c-bef8-dc2a1b860e9c" config-ref="Salesforce_Config">
-            <salesforce:salesforce-query><![CDATA[SELECT ID, Name FROM lead where name = ':leadname']]></salesforce:salesforce-query>
+        <ee:transform doc:name="queryparameters" doc:id="e6f97375-b8ee-48a5-b874-fd6eec691452" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="queryparameters" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"leadname": attributes.queryParams.'leadname' default null,
+	"company": attributes.queryParams.'company' default null
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="8353b233-f1cc-44c7-8f1d-b2f62c249473" message='#[vars.queryparameters]' />
+		<choice doc:name="Choice" doc:id="4a6d7219-eb28-47b5-a785-d92648b9fbf9" >
+			<when expression="#[vars.queryparameters.leadname != null]">
+				<salesforce:query doc:name="Lead" doc:id="e79970b3-b775-4e2c-bef8-dc2a1b860e9c" config-ref="Salesforce_Config">
+            <salesforce:salesforce-query><![CDATA[${leadbyleadname.select}]]></salesforce:salesforce-query>
             <salesforce:parameters><![CDATA[#[output application/java
 ---
 {
-	'leadname' : vars.leadname
+	'leadname' : vars.queryparameters.leadname
 }]]]></salesforce:parameters>
         </salesforce:query>
+			</when>
+			<when expression="#[vars.queryparameters.company != null]">
+				<salesforce:query doc:name="Lead" doc:id="8c25c3f4-676a-456e-a936-e321970f4125" config-ref="Salesforce_Config">
+            <salesforce:salesforce-query><![CDATA[${leadbycompany.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'company' : vars.queryparameters.company
+}]]]></salesforce:parameters>
+        </salesforce:query>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="8594068a-c2ca-4480-9167-32f2dd46e973" message="#['queryparams not provided.']"/>
+			</otherwise>
+		</choice>
         <logger level="INFO" doc:name="Logger" doc:id="072f946b-3177-4db6-9803-5d25df2c2a90" message="#[output application/json --- payload]" />
         <ee:transform doc:name="Transform Message" doc:id="e8a135d4-f08d-44b3-a987-b990946d401c">
             <ee:message>
@@ -182,23 +214,34 @@ payload]]></ee:set-payload>
             </ee:message>
         </ee:transform>
     </flow>
-    <flow name="delete:\lead:estore-sfdc-system-api-config">
-        <ee:transform doc:name="Transform Message">
-            <ee:variables>
-                <ee:set-variable variableName="leadname">attributes.queryParams.'leadname'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <logger level="INFO" doc:name="Logger" doc:id="aac4ba1b-6a79-4808-acc9-0ab833a82c49" message="#[vars.leadname]" />
-        <salesforce:delete doc:name="Delete" doc:id="392314c5-9fde-44fd-af19-03c54ccd59ae" config-ref="Salesforce_Config">
-			<salesforce:ids ><![CDATA[#[['00QHq00001iiEk6MAE', '00QHq00001iiEjcMAE']]]]></salesforce:ids>
+    <flow name="post:\removeleads:application\json:estore-sfdc-system-api-config">
+        <ee:transform doc:name="Transform Message" doc:id="8811081c-0140-456f-8409-27416b53a432" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload.leadidsfordelete]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		 <salesforce:delete doc:name="Delete" doc:id="c88ecbc9-b9f0-44be-a943-eccceffdaad1" config-ref="Salesforce_Config">
+			<salesforce:ids ><![CDATA[#[payload]]]></salesforce:ids>
 		</salesforce:delete>
-        <logger level="INFO" doc:name="Logger" doc:id="d7cf05d5-2266-4613-a1cf-e2750806607f" message="#[output application/json --- payload]" />
-        <ee:transform doc:name="Transform Message" doc:id="43a45d62-cb00-4175-889d-54ea1abcaf5e">
+		 <logger level="INFO" doc:name="Logger" doc:id="2da01d6d-5d9e-4a04-a472-5d769c17b465" message="#[output application/json --- payload]" />
+		<ee:transform doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+{
+  response: {
+  	  message: "remove lead successful",
+  	  removedleadstatus: payload.items map() -> {
+  	  	id: $.id,
+  	  	status: $.successful
+  	  }
+  }
+
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
             </ee:message>
         </ee:transform>
     </flow>

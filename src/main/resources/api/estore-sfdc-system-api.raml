@@ -30,17 +30,23 @@ title: estore-sfdc-system-api
             examples:
               example1: !include examples/create-lead-response.raml
   get:
-     queryParameters: 
+     queryParameters:
       leadname:
         description: leadname
         type: string
-        required: true
-  delete:
-     queryParameters: 
-      leadname:
-        description: leadname
+        required: false
+      company:
+        description: company
         type: string
-        required: true
+        required: false
+     description: getlead
+     responses:
+      200:
+        body:
+          application/json:
+            examples:
+              example1: !include examples/getlead/leads-by-compnay-response.raml
+              example2: !include examples/getlead/leads-by-leadname-response.raml
   /{Id}:
     get:
       description: retrieve lead by Id
@@ -48,5 +54,18 @@ title: estore-sfdc-system-api
         200:
           body:
             application/json:
-    
+/removeleads:
+  post:
+    description: delete leads
+    body:
+        application/json:
+          example: |
+            {
+              "leadidsfordelete": ["00QHq00001iiFdhMAE", "00QHq00001iiFdiMAE"],
+              "callsource": "postman"
+            }
+    responses:
+      200:
+        body:
+          application/json:
 
