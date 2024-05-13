@@ -164,7 +164,63 @@ payload]]></ee:set-payload>
             </ee:message>
         </ee:transform>
     </flow>
-    <flow name="get:\lead:estore-sfdc-system-api-config">
+   <flow name="get:\lead:estore-sfdc-system-api-config">
+        <ee:transform doc:name="queryparameters" doc:id="b87b4789-43ad-4518-b04c-f88156ec9c84" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="queryparameters" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"leadname": attributes.queryParams.'leadname' default null,
+	"company": attributes.queryParams.'company' default null
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="aae5b3aa-3807-4221-9c7c-df0ccd7ab6d2" message='#[vars.queryparameters]' />
+		        <ee:transform doc:name="dynamicquery" doc:id="0b7e2e35-677c-4abd-8e59-abd0ed2dbe26" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="dynamicquery"><![CDATA[%dw 2.0
+output application/json
+---
+if (vars.queryparameters.leadname != null)
+{
+	"query": "SELECT ID, Name FROM lead where name = " ++ "':leadname'"
+}
+else if (vars.queryparameters.company != null) 
+{
+	"query": "SELECT ID, Name FROM lead where company = " ++ "':company'"
+}	
+else
+{
+	"query": "SELECT ID, Name FROM lead limit 10" 
+}
+	]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="e1529e81-bd00-417f-b47e-6bca388c1aeb" message="#[output application/json --- vars.dynamicquery]" />
+		<salesforce:query doc:name="Lead" doc:id="b1f3d09c-cd04-41d1-a961-2991fc4e35f1" config-ref="Salesforce_Config">
+            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+if (vars.queryparameters.leadname != null)
+{'leadname' : vars.queryparameters.leadname} else if (vars.queryparameters.company != null) {'company' : vars.queryparameters.company}
+else {}]]]></salesforce:parameters>
+        </salesforce:query>
+        <logger level="INFO" doc:name="Logger" doc:id="f042da23-d333-4685-b6f3-565b3a9fd054" message="#[output application/json --- payload]" />
+        <ee:transform doc:name="Transform Message" doc:id="8bd8f224-1d88-4d29-83e3-08e0570c394c">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\leadstaticquery:estore-sfdc-system-api-config">
         <ee:transform doc:name="queryparameters" doc:id="e6f97375-b8ee-48a5-b874-fd6eec691452" >
 			<ee:message >
 			</ee:message>
