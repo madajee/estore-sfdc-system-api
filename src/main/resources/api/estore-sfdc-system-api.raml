@@ -68,4 +68,33 @@ title: estore-sfdc-system-api
       200:
         body:
           application/json:
+          
+/convertlead:
+  post:
+    description: convert lead
+    body:
+        application/json:
+          example: |
+            {
+              "name": "John Doe Atlanta",
+              "leadsource": "web"
+            }
+    responses:
+      200:
+        body:
+          application/json:
+/removeaccountcontact:
+  post:
+    description: delete Account and Contact
+    body:
+        application/json:
+          example: |
+            {
+              "acct_contact_idsfordelete": ["00QHq00001iiFdhMAE", "00QHq00001iiFdiMAE"],
+              "callsource": "postman"
+            }
+    responses:
+      200:
+        body:
+          application/json:
 

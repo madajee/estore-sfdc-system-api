@@ -245,4 +245,72 @@ output application/json
             </ee:message>
         </ee:transform>
     </flow>
+	<flow name="post:\convertlead:application\json:estore-sfdc-system-api-config">
+		<logger level="INFO" doc:name="Logger" doc:id="e1a2af47-e822-442b-91d0-6214b2a4f587" message="#[output application/json --- payload]" />
+		<set-variable value="#[payload.name]" doc:name="Set Variable" doc:id="32eefa65-2cc9-4fe7-b0a1-db6ae99afe6c" variableName="leadname"/>
+		<salesforce:query doc:name="Lead" doc:id="14eb64eb-93a8-46ad-8443-9a75d3e5002e" config-ref="Salesforce_Config" target="res_leadbyleadname">
+            <salesforce:salesforce-query><![CDATA[${leadbyleadname.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'leadname' : vars.leadname
+}]]]></salesforce:parameters>
+        </salesforce:query>
+		<logger level="INFO" doc:name="Logger" doc:id="5bba25a0-af18-44a3-8f70-da00a875a0ee" message="#[output application/json --- vars.res_leadbyleadname]"/>
+		<ee:transform doc:name="Transform Message" doc:id="63835d68-f954-45da-8d33-284746a4ad33" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+    leadId: vars.res_leadbyleadname[0].Id,
+    convertedStatus: "Closed - Converted",
+    doNotCreateOpportunity: true
+} as Object {
+    class : "org.mule.extension.salesforce.api.core.LeadConvertRequest"
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:convert-lead doc:name="Convert lead" doc:id="d6e10ba3-97c4-4ec6-ac5a-ae49a3d5e367" config-ref="Salesforce_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="f54cabff-9187-4b90-a737-81ae21760228" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    </flow>
+   <flow name="post:\removeaccountcontact:application\json:estore-sfdc-system-api-config">
+        <ee:transform doc:name="Transform Message" doc:id="1972edfb-5d72-4bca-9fed-45ccf9730f0f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload.acct_contact_idsfordelete]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		 <salesforce:delete doc:name="Delete" doc:id="7e40e3a7-6207-4489-91a0-18e04c1d77d2" config-ref="Salesforce_Config">
+			<salesforce:ids ><![CDATA[#[payload]]]></salesforce:ids>
+		</salesforce:delete>
+		 <logger level="INFO" doc:name="Logger" doc:id="04798aa0-27b1-4265-8a7f-204854acc599" message="#[output application/json --- payload]" />
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  response: {
+  	  message: "remove account contact successful",
+  	  removed_acct_contactstatus: payload.items map() -> {
+  	  	id: $.id,
+  	  	status: $.successful
+  	  }
+  }
+
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
 </mule>

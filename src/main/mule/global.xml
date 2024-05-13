@@ -17,6 +17,7 @@
 	<http:listener-config name="estore-sfdc-system-api-httpListenerConfig">
         <http:listener-connection host="${http.host}" port="${http.port}" />
     </http:listener-config>
+    	<global-property doc:name="Global Property" doc:id="06d44d1d-efb1-43b9-9852-a4f91d9a6548" name="encryption.key" value="123" />
 	<global-property doc:name="Global Property" doc:id="1397dc0b-b5b5-468a-b6a4-0c12685dbb36" name="env" value="local" />
 	<configuration-properties doc:name="Configuration properties" doc:id="60432e35-8520-4f8c-b300-1400706514a5" file="config/config-${env}.yaml"/>
 		<configuration-properties doc:name="Configuration properties" doc:id="5b15dba2-b71c-403a-aaf9-78896e88078e" file="config/queries-${env}.properties" />

@@ -32,3 +32,20 @@ curl --location 'http://localhost:8081/api/removeleads' \
     "callsource": "postman"
 }'
 
+curl --location 'http://localhost:8081/api/convertlead' \
+--header 'Content-Type: application/json' \
+--data '{
+    "name": "John-2 Doe",
+    "leadsource": "web"
+}'
+
+curl --location 'http://localhost:8081/api/removeaccountcontact' \
+--header 'Content-Type: application/json' \
+--data '{
+    "acct_contact_idsfordelete": ["001Hq00003J4xXrIAJ"],
+    "callsource": "postman"
+}'
+
+SELECT ID, Name FROM Account where ID = '001Hq00003J4xXrIAJ'
+SELECT ID, Name FROM Contact where ID = '003Hq00003BYXPcIAP'
+SELECT ID, Name, status FROM Lead where Company = 'Atlanta Products'
