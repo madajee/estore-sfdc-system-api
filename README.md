@@ -1,11 +1,10 @@
 # estore-sfdc-system-api
 
 ### Test
+*************** ping ***************************
 curl --location 'http://localhost:8081/api/ping'
-get-lead-ten
-curl --location 'http://localhost:8081/api/lead'
-curl --location 'http://localhost:8081/api/lead?leadname=Bertha%20Boxer'
-curl --location 'http://localhost:8081/api/lead/00Q3600000B0rTwEAJ'
+
+*************** create 2 leads ***************************
 curl --location 'http://localhost:8081/api/lead' \
 --header 'Content-Type: application/json' \
 --data '[
@@ -22,37 +21,43 @@ curl --location 'http://localhost:8081/api/lead' \
         "status": "Open"
     }
 ]'
-curl --location 'http://localhost:8081/api/lead?company=Farmers%20Coop.%20of%20Florida'
+
+*************** get 10 random leads ***************************
+curl --location 'http://localhost:8081/api/lead'
+*************** get lead by lead name ***************************
+curl --location 'http://localhost:8081/api/lead?leadname=John-1%20Doe'
+*************** get leads by company ***************************
 curl --location 'http://localhost:8081/api/lead?company=Atlanta%20Products'
-curl --location 'http://localhost:8081/api/removeleads' \
---header 'Content-Type: application/json' \
---data '{
-    "leadidsfordelete": [
-        "00QHq00001iiFfOMAU",
-        "00QHq00001iiFfPMAU"
-
-    ],
-    "callsource": "postman"
-}'
-
+*************** get lead by id ***************************
+curl --location 'http://localhost:8081/api/lead/00Q3600000B0rTwEAJ'
+*************** convert lead ***************************
 curl --location 'http://localhost:8081/api/convertlead' \
 --header 'Content-Type: application/json' \
 --data '{
-    "name": "John-2 Doe",
+    "name": "John-1 Doe",
     "leadsource": "web"
 }'
-
-curl --location 'http://localhost:8081/api/removeaccountcontact' \
+*************** deleteaccountcontact ***************************
+curl --location 'http://localhost:8081/api/deleteaccountcontact' \
 --header 'Content-Type: application/json' \
 --data '{
-    "acct_contact_idsfordelete": ["001Hq00003J4xXrIAJ"],
+    "acct_contact_idsfordelete": ["001Hq00003J503CIAR"],
     "callsource": "postman"
 }'
-
-get-lead-by-leadname-static
+*************** deleteleads ***************************
+curl --location 'http://localhost:8081/api/deleteleads' \
+--header 'Content-Type: application/json' \
+--data '{
+    "leadidsfordelete": [
+        "00QHq00001iiGoiMAE",
+        "00QHq00001iiGojMAE"
+    ],
+    "callsource": "postman"
+}'
+*************** get-lead-by-leadname (static query) ***************************
 curl --location 'http://localhost:8081/api/leadstaticquery?leadname=Bertha%20Boxer'
 
-get-lead-by-company-static
+*************** get-lead-by-company (static query) ***************************
 curl --location 'http://localhost:8081/api/leadstaticquery?company=Farmers%20Coop.%20of%20Florida'
 
 SELECT ID, Name FROM Account where ID = '001Hq00003J4xXrIAJ'

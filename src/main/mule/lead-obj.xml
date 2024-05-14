@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="create-leadSubFlow" doc:id="c2fc0f79-ac5f-482d-aaf5-33b9d811f36b">
+		<ee:transform doc:name="create-lead-request" doc:id="4d880eb2-4f51-40e6-8aa9-e55d2d8d29a1" >
+			<ee:message >
+				<ee:set-payload resource="dwl/create-lead-request.dwl" />
+			</ee:message>
+		</ee:transform>
+		<salesforce:create type="Lead" doc:name="CreateLead" doc:id="f1428de5-1351-4e64-be0e-53d973c9d7af" config-ref="Salesforce_Config"/>
+		<ee:transform doc:name="create-lead-response">
+            <ee:message>
+				<ee:set-payload resource="dwl/create-lead-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="get-lead-by-idSubFlow" doc:id="717415dd-54fd-4435-9dbf-b46c7a788ab1">
+		<salesforce:query doc:name="get-lead-by-id" doc:id="8860c08a-85f6-4c1b-aa72-d2551f468881" config-ref="Salesforce_Config">
+            <salesforce:salesforce-query><![CDATA[${leadbyid.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'Id' : vars.Id
+}]]]></salesforce:parameters>
+        </salesforce:query>
+        <ee:transform doc:name="get-lead-y-id-response" doc:id="449badbd-0a61-493c-b7b8-1e3f66531c41">
+            <ee:message>
+				<ee:set-payload resource="dwl/get-lead-by-id-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="get-leadSubFlow" doc:id="aff22a6e-77e0-4f43-aa28-0d722e533f58">
+		<ee:transform doc:name="dynamicquery" doc:id="b3396ce0-2084-4f6e-963c-1f1cb0d8ac9e" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable resource="dwl/get-lead-dynamic-query.dwl" variableName="dynamicquery" />
+			</ee:variables>
+		</ee:transform>
+		<salesforce:query doc:name="Lead" doc:id="43496067-2a6e-4d45-a84c-fe93ce3c8d19" config-ref="Salesforce_Config">
+            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+if (vars.queryparameters.leadname != null)
+{'leadname' : vars.queryparameters.leadname} else if (vars.queryparameters.company != null) {'company' : vars.queryparameters.company}
+else {}]]]></salesforce:parameters>
+        </salesforce:query>
+        <ee:transform doc:name="Transform Message" doc:id="25dce93f-f17c-452c-a225-6fe9081cb805">
+            <ee:message>
+				<ee:set-payload resource="dwl/get-lead-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="convert-leadSubFlow" doc:id="453de814-c4f3-4ef0-ba9a-79da90cc3f6c">
+		<set-variable value="#[payload.name]" doc:name="leadname" doc:id="b2bfac31-722f-4b16-9666-4e5eee8a9542" variableName="leadname"/>
+		<salesforce:query doc:name="get-lead-by-name" doc:id="f9912599-1998-41f8-a133-b1146e781bef" config-ref="Salesforce_Config" target="res_leadbyleadname">
+            <salesforce:salesforce-query><![CDATA[${leadbyleadname.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'leadname' : vars.leadname
+}]]]></salesforce:parameters>
+        </salesforce:query>
+		<ee:transform doc:name="convert-lead-request" doc:id="d68d7ef5-ea75-4537-9036-025f4e4bc18f" >
+			<ee:message >
+				<ee:set-payload resource="dwl/convert-lead-request.dwl" />
+			</ee:message>
+		</ee:transform>
+		<salesforce:convert-lead doc:name="convert-lead" doc:id="3e7484c0-afdc-4245-88f9-3bf5dd641671" config-ref="Salesforce_Config"/>
+		<ee:transform doc:name="convert-lead-response" doc:id="a001f1d6-7118-43db-91a9-b9aace59ce92" >
+			<ee:message >
+				<ee:set-payload resource="dwl/convert-lead-response.dwl" />
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="lead-staticquerySubFlow" doc:id="a7fa2305-0187-4efb-9e7b-0e02b6c67cef">
+        <ee:transform doc:name="queryparameters" doc:id="1c85c0f1-e585-49ff-bc16-3f2df20484be" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="queryparameters" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"leadname": attributes.queryParams.'leadname' default null,
+	"company": attributes.queryParams.'company' default null
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="e224db81-1913-4165-a783-bc355a15bf67" >
+			<when expression="#[vars.queryparameters.leadname != null]">
+				<salesforce:query doc:name="lead-by-leadname" doc:id="3ea5e9d4-8645-4559-95d1-0eda5e2aab3c" config-ref="Salesforce_Config">
+            <salesforce:salesforce-query><![CDATA[${leadbyleadname.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'leadname' : vars.queryparameters.leadname
+}]]]></salesforce:parameters>
+        </salesforce:query>
+			</when>
+			<when expression="#[vars.queryparameters.company != null]">
+				<salesforce:query doc:name="lead-by-company" doc:id="b9c229a5-57c0-4368-bd8d-34fb70036e54" config-ref="Salesforce_Config">
+            <salesforce:salesforce-query><![CDATA[${leadbycompany.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'company' : vars.queryparameters.company
+}]]]></salesforce:parameters>
+        </salesforce:query>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="dacbc5ac-83ea-4714-bf3b-cfd60d95bf0c" message="#['queryparams not provided.']"/>
+			</otherwise>
+		</choice>
+        <ee:transform doc:name="get-lead-static-query-response" doc:id="d7ec5f9c-9f4a-4d0d-bba7-509319bee466">
+            <ee:message>
+				<ee:set-payload resource="dwl/get-lead-static-query-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="deleteleadsSubFlow" doc:id="d7171840-26c1-456c-ba1d-e48ca68549bb">
+        <ee:transform doc:name="delete-lead-request" doc:id="65fff51d-9dde-44b0-afb2-523642eef222" >
+			<ee:message >
+				<ee:set-payload resource="dwl/delete-lead-request.dwl" />
+			</ee:message>
+		</ee:transform>
+		 <salesforce:delete doc:name="delete-by-ids" doc:id="9fea1be1-6a51-4ed5-ac62-91eb51eba59d" config-ref="Salesforce_Config">
+			<salesforce:ids ><![CDATA[#[payload]]]></salesforce:ids>
+		</salesforce:delete>
+		<ee:transform doc:name="delete-lead-response">
+            <ee:message>
+				<ee:set-payload resource="dwl/delete-lead-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="deleteaccountcontactSubFlow" doc:id="b2f0d530-5e2b-48f9-a40b-8bb30b3a1de4">
+        <ee:transform doc:name="delete-acct-contact-request" doc:id="77dbe286-5c86-4fbc-997e-9ede9e27bcf0" >
+			<ee:message >
+				<ee:set-payload resource="dwl/delete-acct-contact-request.dwl" />
+			</ee:message>
+		</ee:transform>
+		 <salesforce:delete doc:name="delete-by-ids" doc:id="f4db0a67-286d-4768-bcee-fd16493e149c" config-ref="Salesforce_Config">
+			<salesforce:ids ><![CDATA[#[payload]]]></salesforce:ids>
+		</salesforce:delete>
+		<ee:transform doc:name="delete-acct-contact-response">
+            <ee:message>
+				<ee:set-payload resource="dwl/delete-acct-contact-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+</mule>

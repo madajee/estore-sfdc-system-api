@@ -18,10 +18,20 @@ title: estore-sfdc-system-api
     body:
         application/json:
           example: |
-            {
-              "name": "John Doe Atlanta",
-              "leadsource": "web"
-            }
+            [
+                {
+                    "firstname": "John-1",
+                    "lastname": "Doe",
+                    "company": "Atlanta Products",
+                    "status": "Open"
+                },
+                {
+                    "firstname": "John-2",
+                    "lastname": "Doe",
+                    "company": "Atlanta Products",
+                    "status": "Open"
+                }
+            ]
     responses:
       200:
         body:
@@ -44,28 +54,21 @@ title: estore-sfdc-system-api
       200:
         body:
           application/json:
+              type: object
+              examples:
+                example1: !include examples/get-lead-by-id-response.raml
+                example2: !include examples/get-random-ten-lead-response.raml
+                example3: !include examples/get-lead-by-name-response.raml
   /{Id}:
     get:
-      description: retrieve lead by Id
+      description: get lead by Id
       responses:
         200:
           body:
             application/json:
-/removeleads:
-  post:
-    description: delete leads
-    body:
-        application/json:
-          example: |
-            {
-              "leadidsfordelete": ["00QHq00001iiFdhMAE", "00QHq00001iiFdiMAE"],
-              "callsource": "postman"
-            }
-    responses:
-      200:
-        body:
-          application/json:
-          
+              type: object
+              examples:
+                example1: !include examples/get-lead-by-id-response.raml
 /convertlead:
   post:
     description: convert lead
@@ -80,7 +83,26 @@ title: estore-sfdc-system-api
       200:
         body:
           application/json:
-/removeaccountcontact:
+              type: object
+              examples:
+                example1: !include examples/convert-lead-response.raml
+          
+/deleteleads:
+  post:
+    description: delete leads
+    body:
+        application/json:
+          example: |
+            {
+              "leadidsfordelete": ["00QHq00001iiFdhMAE", "00QHq00001iiFdiMAE"],
+              "callsource": "postman"
+            }
+    responses:
+      200:
+        body:
+          application/json:
+          
+/deleteaccountcontact:
   post:
     description: delete Account and Contact
     body:
@@ -111,6 +133,6 @@ title: estore-sfdc-system-api
         body:
           application/json:
             examples:
-              example1: !include examples/getlead/leads-by-compnay-response.raml
-              example2: !include examples/getlead/leads-by-leadname-response.raml
+              example1: !include examples/get-lead-static-by-company-response.raml
+              example2: !include examples/get-lead-static-by-leadname-response.raml
 
