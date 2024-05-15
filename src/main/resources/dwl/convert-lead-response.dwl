@@ -1,9 +1,12 @@
 %dw 2.0
 output application/json
+var doNotCreateOpportunity = vars.convertleadrequestparams.doNotCreateOpportunity as Boolean
+var messageopportunity =  "lead conversion with opportunity successful"
+var message =  "lead conversion without opportunity successful"
 ---
 {
   response: {
-  	  message: "convert lead successful",
+  	  message: (if (vars.convertleadrequestparams.doNotCreateOpportunity as Boolean) messageopportunity else message),
   	  payload: payload
   }
 

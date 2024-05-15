@@ -56,15 +56,44 @@ else {}]]]></salesforce:parameters>
         </ee:transform>
 	</sub-flow>
 	<sub-flow name="convert-leadSubFlow" doc:id="453de814-c4f3-4ef0-ba9a-79da90cc3f6c">
-		<set-variable value="#[payload.name]" doc:name="leadname" doc:id="b2bfac31-722f-4b16-9666-4e5eee8a9542" variableName="leadname"/>
+		 <ee:transform doc:name="convertleadrequestparams" doc:id="f26f7502-6267-45a6-9eba-541d030176be" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="convertleadrequestparams" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"leadname": payload.name default null,
+	"accountname": payload.accountname default null,
+	"doNotCreateOpportunity": payload.doNotCreateOpportunity default true
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<!-- <set-variable value="#[payload.name]" doc:name="leadname" doc:id="b2bfac31-722f-4b16-9666-4e5eee8a9542" variableName="leadname"/> -->
 		<salesforce:query doc:name="get-lead-by-name" doc:id="f9912599-1998-41f8-a133-b1146e781bef" config-ref="Salesforce_Config" target="res_leadbyleadname">
             <salesforce:salesforce-query><![CDATA[${leadbyleadname.select}]]></salesforce:salesforce-query>
             <salesforce:parameters><![CDATA[#[output application/java
 ---
 {
-	'leadname' : vars.leadname
+	'leadname' : vars.convertleadrequestparams.leadname
 }]]]></salesforce:parameters>
         </salesforce:query>
+		<choice doc:name="Choice" doc:id="0e21d351-2a26-4685-a930-8b86a8065109" >
+			<when expression="#[vars.convertleadrequestparams.accountname != null]">
+				<salesforce:query doc:name="get-account-by-name" doc:id="e468a3ae-8e14-4685-8865-b04ae7b1bcfb" config-ref="Salesforce_Config" target="res_accountbyaccountname">
+            <salesforce:salesforce-query><![CDATA[${accountbyaccountname.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'accountname' :vars.convertleadrequestparams.accountname
+}]]]></salesforce:parameters>
+        </salesforce:query>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="8551dfd8-852e-4b45-9932-b616ae414e36" message="#['Account ID Query is not possible without account name']"/>
+			</otherwise>
+		</choice>
 		<ee:transform doc:name="convert-lead-request" doc:id="d68d7ef5-ea75-4537-9036-025f4e4bc18f" >
 			<ee:message >
 				<ee:set-payload resource="dwl/convert-lead-request.dwl" />

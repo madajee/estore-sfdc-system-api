@@ -35,7 +35,17 @@ curl --location 'http://localhost:8081/api/convertlead' \
 --header 'Content-Type: application/json' \
 --data '{
     "name": "John-1 Doe",
-    "leadsource": "web"
+    "leadsource": "web",
+    "doNotCreateOpportunity": true
+}'
+*************** convert lead to existing account ***************************
+curl --location 'http://localhost:8081/api/convertlead' \
+--header 'Content-Type: application/json' \
+--data '{
+    "name": "John-2 Doe",
+    "leadsource": "web",
+    "accountname": "Atlanta Products",
+    "doNotCreateOpportunity": true
 }'
 *************** deleteaccountcontact ***************************
 curl --location 'http://localhost:8081/api/deleteaccountcontact' \
