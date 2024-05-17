@@ -66,6 +66,7 @@ output application/json
 {
 	"leadname": payload.name default null,
 	"accountname": payload.accountname default null,
+	"opportunityname": payload.opportunityname default null,
 	"doNotCreateOpportunity": payload.doNotCreateOpportunity default true
 }]]></ee:set-variable>
 			</ee:variables>
