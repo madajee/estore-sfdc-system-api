@@ -3,7 +3,7 @@ output application/json
 ---
 {
   response: {
-  	  message: "remove lead successful",
+  	  message: "remove products successful",
   	  rpayload: payload.items map() -> {
   	  	id: $.id,
   	  	status: $.successful

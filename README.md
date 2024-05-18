@@ -73,3 +73,33 @@ curl --location 'http://localhost:8081/api/leadstaticquery?company=Farmers%20Coo
 SELECT ID, Name FROM Account where ID = '001Hq00003J4xXrIAJ'
 SELECT ID, Name FROM Contact where ID = '003Hq00003BYXPcIAP'
 SELECT ID, Name, status FROM Lead where Company = 'Atlanta Products'
+
+*************** create 2 products ***************************
+curl --location 'http://localhost:8081/api/product' \
+--header 'Content-Type: application/json' \
+--data '[
+    {
+        "name": "test-book-1",
+        "description": "test book 1",
+        "family": "Book"
+    },
+    {
+        "name": "test-book-2",
+        "description": "test book 2",
+        "family": "Book"
+    }
+]'
+
+*************** get product by Id ***************************
+curl --location 'http://localhost:8081/api/product/01tHq000007wdbKIAQ'
+
+*************** delete products ***************************
+curl --location 'http://localhost:8081/api/deleteproducts' \
+--header 'Content-Type: application/json' \
+--data '{
+    "productidsfordelete": [
+        "01tHq000007wdbKIAQ",
+        "01tHq000007wdbLIAQ"
+    ],
+    "callsource": "postman"
+}'

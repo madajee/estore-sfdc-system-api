@@ -136,4 +136,46 @@ title: estore-sfdc-system-api
             examples:
               example1: !include examples/get-lead-static-by-company-response.raml
               example2: !include examples/get-lead-static-by-leadname-response.raml
+              
+/product:
+  post:
+    description: create product
+    body:
+        application/json:
+          example: |
+            [
+                {
+                    "Name": "test-book-1",
+                    "description": "test book 1"
+                },
+                {
+                   "Name": "test-book-2",
+                    "description": "test book 2"
+                }
+            ]
+    responses:
+      200:
+        body:
+          application/json:
 
+  /{Id}:
+    get:
+      description: get product by Id
+      responses:
+        200:
+          body:
+            application/json:
+/deleteproducts:
+  post:
+    description: delete products
+    body:
+        application/json:
+          example: |
+            {
+              "productidsfordelete": ["00QHq00001iiFdhMAE", "00QHq00001iiFdiMAE"],
+              "callsource": "postman"
+            }
+    responses:
+      200:
+        body:
+          application/json:

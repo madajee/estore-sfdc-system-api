@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	
+   <flow name="post:\product:application\json:estore-sfdc-system-api-config">
+		<flow-ref doc:name="create-lead" doc:id="d7407892-1c8c-4c25-939c-884add599209" name="create-productSubFlow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="f8183cce-0bd5-4ab7-94fc-3494ab34d095" message='#[output application/json --- {"message": "create product"}]'/>
+    </flow>
+    <flow name="post:\deleteproducts:application\json:estore-sfdc-system-api-config">
+		<flow-ref doc:name="deleteproductsSubFlow" doc:id="9f6ca929-7112-4b8c-9383-d604cc78ccfb" name="deleteproductsSubFlow"/>
+    </flow>
+    <flow name="get:\product\(Id):estore-sfdc-system-api-config">
+        <ee:transform doc:name="uri-params">
+            <ee:variables>
+                <ee:set-variable variableName="Id">attributes.uriParams.'Id'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+ 		<flow-ref doc:name="get-product-by-idSubFlow" doc:id="2d424f00-b13b-4218-8ec1-f16eb92abb4f" name="get-product-by-idSubFlow"/>
+    </flow>
+    <sub-flow name="create-productSubFlow" doc:id="e65a969a-0011-46ef-b851-550ecc8e2015">
+		<ee:transform doc:name="create-product-request" doc:id="d7b7c8fc-8bcb-4e42-a631-caf4a792ec35" >
+			<ee:message >
+				<ee:set-payload resource="dwl/create-product-request.dwl" />
+			</ee:message>
+		</ee:transform>
+		<salesforce:create type="Product2" doc:name="CreateProduct" doc:id="195f7396-e7af-47e3-82d6-8d6b67b8d462" config-ref="Salesforce_Config"/>
+		<ee:transform doc:name="create-product-response">
+            <ee:message>
+				<ee:set-payload resource="dwl/create-product-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="deleteproductsSubFlow" doc:id="a2b5f975-d8da-4ee2-aa9c-95ea9fcc3697">
+        <ee:transform doc:name="delete-product-request" doc:id="f3a72e2c-6ebe-43d9-a48e-8a3860360d24" >
+			<ee:message >
+				<ee:set-payload resource="dwl/delete-product-request.dwl" />
+			</ee:message>
+		</ee:transform>
+		 <salesforce:delete doc:name="delete-by-ids" doc:id="3538fc93-2545-4bf7-9373-241488fabe76" config-ref="Salesforce_Config">
+			<salesforce:ids ><![CDATA[#[payload]]]></salesforce:ids>
+		</salesforce:delete>
+		<ee:transform doc:name="delete-lead-response">
+            <ee:message>
+				<ee:set-payload resource="dwl/delete-lead-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="get-product-by-idSubFlow" doc:id="3505da82-099a-43d8-87fe-5012a5a02298">
+		<salesforce:query doc:name="get-product-by-id" doc:id="3965445a-4534-4b96-8984-1a02a394a969" config-ref="Salesforce_Config">
+            <salesforce:salesforce-query><![CDATA[${productbyid.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'Id' : vars.Id
+}]]]></salesforce:parameters>
+        </salesforce:query>
+        <ee:transform doc:name="get-product-y-id-response" doc:id="fb5ef9f1-353d-4040-a348-ecd3115452ac">
+            <ee:message>
+				<ee:set-payload resource="dwl/get-product-by-id-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+</mule>
