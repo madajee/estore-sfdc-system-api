@@ -3,7 +3,7 @@ output application/json
 ---
 {
   response: {
-  	  message: "create product successful",
+  	  message: "create lead successful",
   	  payload: payload.items map() -> {
   	  	id: $.id,
   	  	status: $.successful

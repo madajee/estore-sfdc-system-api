@@ -8,7 +8,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
 	
    <flow name="post:\product:application\json:estore-sfdc-system-api-config">
-		<flow-ref doc:name="create-lead" doc:id="d7407892-1c8c-4c25-939c-884add599209" name="create-productSubFlow"/>
+		<flow-ref doc:name="create-product" doc:id="d7407892-1c8c-4c25-939c-884add599209" name="create-productSubFlow"/>
 		<logger level="INFO" doc:name="Logger" doc:id="f8183cce-0bd5-4ab7-94fc-3494ab34d095" message='#[output application/json --- {"message": "create product"}]'/>
     </flow>
     <flow name="post:\deleteproducts:application\json:estore-sfdc-system-api-config">
@@ -21,6 +21,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
             </ee:variables>
         </ee:transform>
  		<flow-ref doc:name="get-product-by-idSubFlow" doc:id="2d424f00-b13b-4218-8ec1-f16eb92abb4f" name="get-product-by-idSubFlow"/>
+ 		<!-- <flow-ref doc:name="get-price-by-productcode-currencySubFlow" doc:id="44149926-e0c8-4e8b-bc93-75eb04fd8aeb" name="get-price-by-productcode-currencySubFlow"/> -->
     </flow>
     <sub-flow name="create-productSubFlow" doc:id="e65a969a-0011-46ef-b851-550ecc8e2015">
 		<ee:transform doc:name="create-product-request" doc:id="d7b7c8fc-8bcb-4e42-a631-caf4a792ec35" >
@@ -62,6 +63,16 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
         <ee:transform doc:name="get-product-y-id-response" doc:id="fb5ef9f1-353d-4040-a348-ecd3115452ac">
             <ee:message>
 				<ee:set-payload resource="dwl/get-product-by-id-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="get-price-by-productcode-currencySubFlow" doc:id="f4c276f2-bafd-4f71-a35e-ad22c4d1d1e1">
+        <salesforce:query doc:name="get-product-by-id" doc:id="5451f9ac-6c59-4eb9-a593-104fae29de2d" config-ref="Salesforce_Config">
+            <salesforce:salesforce-query><![CDATA[${pricebook.select}]]></salesforce:salesforce-query>
+        </salesforce:query>
+        <ee:transform doc:name="get-product-y-id-response" doc:id="478749d8-8ae8-4543-abd3-92a9f3fbcbd2">
+            <ee:message>
+				<ee:set-payload resource="dwl/get-product-by-productcode-currency-response.dwl" />
             </ee:message>
         </ee:transform>
 	</sub-flow>
