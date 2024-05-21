@@ -103,3 +103,39 @@ curl --location 'http://localhost:8081/api/deleteproducts' \
     ],
     "callsource": "postman"
 }'
+
+*************** create 3 products (ABC-SPC-R01, ABC-SPG-01, ABC-SPG-02) ******************
+
+curl --location 'http://localhost:8081/api/product' \
+--header 'Content-Type: application/json' \
+--data '[
+    {
+        "name": "ABC-UMS Solar Panel Cleaning Residential",
+        "description": "Residential solar panel cleaning service package",
+        "family": "Service Packages",
+        "productcode": "ABC-SPC-R01",
+        "productcurrency": "USD",
+        "active": true
+
+    },
+    {
+        "name": "ABC-SunPower Ground",
+        "description": "80-cell ground-mounted solar panel",
+        "family": "Panels",
+        "productcode": "ABC-SPG-01",
+        "productcurrency": "USD",
+        "active": true,
+        "groundmount": true
+    },
+    {
+        "name": "ABC-GreenSun Ground",
+        "description": "60-cell ground-mounted solar panel",
+        "family": "Panels",
+        "productcode": "ABC-SPG-02",
+        "productcurrency": "USD",
+        "active": true,
+        "groundmount": true
+    }
+]'
+
+

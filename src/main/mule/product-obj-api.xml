@@ -70,7 +70,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
         <salesforce:query doc:name="get-product-by-id" doc:id="5451f9ac-6c59-4eb9-a593-104fae29de2d" config-ref="Salesforce_Config">
             <salesforce:salesforce-query><![CDATA[${pricebook.select}]]></salesforce:salesforce-query>
         </salesforce:query>
-        <ee:transform doc:name="get-product-y-id-response" doc:id="478749d8-8ae8-4543-abd3-92a9f3fbcbd2">
+        <ee:transform doc:name="get-product-by-id-response" doc:id="478749d8-8ae8-4543-abd3-92a9f3fbcbd2">
             <ee:message>
 				<ee:set-payload resource="dwl/get-product-by-productcode-currency-response.dwl" />
             </ee:message>
