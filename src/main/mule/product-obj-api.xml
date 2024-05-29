@@ -26,6 +26,10 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
  		<flow-ref doc:name="get-product-by-idSubFlow" doc:id="2d424f00-b13b-4218-8ec1-f16eb92abb4f" name="get-product-by-idSubFlow"/>
  		<!-- <flow-ref doc:name="get-price-by-productcode-currencySubFlow" doc:id="44149926-e0c8-4e8b-bc93-75eb04fd8aeb" name="get-price-by-productcode-currencySubFlow"/> -->
     </flow>
+   <flow name="post:\pricebookentry:application\json:estore-sfdc-system-api-config">
+		<flow-ref doc:name="create-pricebookentrySubFlow" doc:id="33e28cb6-9e51-45c0-96d9-fb77f394c5f2" name="create-pricebookentrySubFlow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="145ba1ec-4ff9-46c8-baad-12d3775bf5ac" message='#[output application/json --- {"message": "create pricebookentry"}]'/>
+    </flow>
     <sub-flow name="create-productSubFlow" doc:id="e65a969a-0011-46ef-b851-550ecc8e2015">
 		<ee:transform doc:name="create-product-request" doc:id="d7b7c8fc-8bcb-4e42-a631-caf4a792ec35" >
 			<ee:message >
@@ -94,6 +98,35 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
         <ee:transform doc:name="get-products-by-productcodelist-response" doc:id="8188558e-f70a-4056-a7f7-3d9620662b6e">
             <ee:message>
 				<ee:set-payload resource="dwl/get-products-by-productcodelist-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="create-pricebookentrySubFlow" doc:id="0bc477a5-0635-4273-bdec-6ca3957b38db">
+		<salesforce:query doc:name="get-pricebook-by-name" doc:id="cf054bdc-c1dd-4f02-acfe-940dfe73dba9" config-ref="Salesforce_Config" target="pricebook">
+            <salesforce:salesforce-query><![CDATA[${pricebookbyname.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'pricebookname' : payload[0].pricebookname
+}]]]></salesforce:parameters>
+        </salesforce:query>
+		<salesforce:query doc:name="get-product-by-productcode" doc:id="7376f143-87e8-4b15-bb08-e01052dfe7fe" config-ref="Salesforce_Config" target="productbyproductcode">
+            <salesforce:salesforce-query><![CDATA[${productbyproductcode.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'productcode' : payload[0].productcode
+}]]]></salesforce:parameters>
+        </salesforce:query>
+		<ee:transform doc:name="create-pricebookentry-request" doc:id="156501b2-9253-4ed8-9ecc-ea4a2e3acae6" >
+			<ee:message >
+				<ee:set-payload resource="dwl/create-pricebookentry-request.dwl" />
+			</ee:message>
+		</ee:transform>
+		<salesforce:create type="PricebookEntry" doc:name="CreatePricebookEntry" doc:id="7d73cb3f-4807-47c1-8f50-a99ee1d806d8" config-ref="Salesforce_Config"/>
+		<ee:transform doc:name="create-pricebookentry-response">
+            <ee:message>
+				<ee:set-payload resource="dwl/create-pricebookentry-response.dwl" />
             </ee:message>
         </ee:transform>
 	</sub-flow>

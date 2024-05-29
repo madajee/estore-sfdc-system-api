@@ -23,3 +23,5 @@ select Id, Name, CurrencyIsoCode, UnitPrice, ProductCode, Pricebook2Id from Pric
 
 select Id, Name, CurrencyIsoCode, UnitPrice, ProductCode, Pricebook2Id__r.Name from PricebookEntry where ProductCode = 'SPC-R01' and Pricebook2Id = '01sbm000001n0uMAAQ' AND CurrencyIsoCode = 'EUR'
 
+Enable Logger for Salesforce Connector
+<AsyncLogger name="org.mule.extension.salesforce" level="DEBUG"/>

@@ -193,3 +193,22 @@ title: estore-sfdc-system-api
       200:
         body:
           application/json:
+/pricebookentry:
+  post:
+    description: create product
+    body:
+        application/json:
+          example: |
+                [
+                  {
+                    "productcode": "ABC-SPC-R01",
+                    "currency": "EUR",
+                    "pricebookname": "Standard Price Book",
+                    "price": "397"
+                  }
+                ]
+    responses:
+      200:
+        body:
+          application/json:
+
