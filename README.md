@@ -138,4 +138,16 @@ curl --location 'http://localhost:8081/api/product' \
     }
 ]'
 
+*************** POST /productsbyproductcodelist get products (ABC-SPC-R01, ABC-SPG-01, ABC-SPG-02)  ******************
+curl --location 'http://localhost:8081/api/productsbyproductcodelist' \
+--header 'Content-Type: application/json' \
+--data '{
+    "productcodelist": [
+        "ABC-SPC-R01",
+        "ABC-SPG-01",
+        "ABC-SPG-02"
+    ],
+    "callsource": "postman"
+}'
+
 

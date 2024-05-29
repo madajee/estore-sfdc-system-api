@@ -14,6 +14,9 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
     <flow name="post:\deleteproducts:application\json:estore-sfdc-system-api-config">
 		<flow-ref doc:name="deleteproductsSubFlow" doc:id="9f6ca929-7112-4b8c-9383-d604cc78ccfb" name="deleteproductsSubFlow"/>
     </flow>
+	<flow name="post:\productsbyproductcodelist:application\json:estore-sfdc-system-api-config">
+		<flow-ref doc:name="get-products-by-productcodelistSubFlow" doc:id="25044ae7-26e1-405b-b195-376293e0a573" name="get-products-by-productcodelistSubFlow"/>
+    </flow>
     <flow name="get:\product\(Id):estore-sfdc-system-api-config">
         <ee:transform doc:name="uri-params">
             <ee:variables>
@@ -73,6 +76,24 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
         <ee:transform doc:name="get-product-by-id-response" doc:id="478749d8-8ae8-4543-abd3-92a9f3fbcbd2">
             <ee:message>
 				<ee:set-payload resource="dwl/get-product-by-productcode-currency-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="get-products-by-productcodelistSubFlow" doc:id="59d9d866-d704-41c4-8701-5e3cafd3d637">
+        <ee:transform doc:name="get-products-by-productcodelist-dynamicquery" doc:id="374c509e-4bf4-491a-96c3-38e2e7a812d8" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable resource="dwl/get-products-by-productcodelist-dynamicquery.dwl" variableName="dynamicquery" />
+			</ee:variables>
+		</ee:transform>
+		<salesforce:query doc:name="get-product-by-productcode" doc:id="0428bb02-ac0e-47b2-9a21-4d073404a477" config-ref="Salesforce_Config">
+           <!--  <salesforce:salesforce-query><![CDATA[${productbyproductcodelist.select}]]></salesforce:salesforce-query> -->
+            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query> 
+        </salesforce:query>
+        <ee:transform doc:name="get-products-by-productcodelist-response" doc:id="8188558e-f70a-4056-a7f7-3d9620662b6e">
+            <ee:message>
+				<ee:set-payload resource="dwl/get-products-by-productcodelist-response.dwl" />
             </ee:message>
         </ee:transform>
 	</sub-flow>

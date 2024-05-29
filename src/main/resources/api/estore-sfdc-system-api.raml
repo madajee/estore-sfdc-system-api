@@ -179,3 +179,17 @@ title: estore-sfdc-system-api
       200:
         body:
           application/json:
+/productsbyproductcodelist:
+  post:
+    description: get products by product code list
+    body:
+        application/json:
+          example: |
+            {
+              "productcodelist": ["ABC-SPC-R01", "ABC-SPG-01", "ABC-SPG-02"],
+              "callsource": "postman"
+            }
+    responses:
+      200:
+        body:
+          application/json:
