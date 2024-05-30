@@ -211,4 +211,33 @@ title: estore-sfdc-system-api
       200:
         body:
           application/json:
+  get:
+     queryParameters:
+      productcode:
+        description: productcode
+        type: string
+        required: true
+      pricebookname:
+        description: pricebookname
+        type: string
+        required: true
+     description: get pricebook entries
+     responses:
+      200:
+        body:
+          application/json:
+/deletepricebookentry:
+  post:
+    description: delete pricebookentry
+    body:
+        application/json:
+          example: |
+            {
+              "pricebookentryfordelete": ["00QHq00001iiFdhMAE", "00QHq00001iiFdiMAE"],
+              "callsource": "postman"
+            }
+    responses:
+      200:
+        body:
+          application/json:
 

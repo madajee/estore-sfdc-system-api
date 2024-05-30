@@ -11,9 +11,6 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 		<flow-ref doc:name="create-product" doc:id="d7407892-1c8c-4c25-939c-884add599209" name="create-productSubFlow"/>
 		<logger level="INFO" doc:name="Logger" doc:id="f8183cce-0bd5-4ab7-94fc-3494ab34d095" message='#[output application/json --- {"message": "create product"}]'/>
     </flow>
-    <flow name="post:\deleteproducts:application\json:estore-sfdc-system-api-config">
-		<flow-ref doc:name="deleteproductsSubFlow" doc:id="9f6ca929-7112-4b8c-9383-d604cc78ccfb" name="deleteproductsSubFlow"/>
-    </flow>
 	<flow name="post:\productsbyproductcodelist:application\json:estore-sfdc-system-api-config">
 		<flow-ref doc:name="get-products-by-productcodelistSubFlow" doc:id="25044ae7-26e1-405b-b195-376293e0a573" name="get-products-by-productcodelistSubFlow"/>
     </flow>
@@ -29,6 +26,28 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
    <flow name="post:\pricebookentry:application\json:estore-sfdc-system-api-config">
 		<flow-ref doc:name="create-pricebookentrySubFlow" doc:id="33e28cb6-9e51-45c0-96d9-fb77f394c5f2" name="create-pricebookentrySubFlow"/>
 		<logger level="INFO" doc:name="Logger" doc:id="145ba1ec-4ff9-46c8-baad-12d3775bf5ac" message='#[output application/json --- {"message": "create pricebookentry"}]'/>
+    </flow>
+    <flow name="post:\deleteproducts:application\json:estore-sfdc-system-api-config">
+		<flow-ref doc:name="deleteproductsSubFlow" doc:id="cc077bde-fd41-45bd-a01a-2d00250a6e9b" name="deleteproductsSubFlow"/>
+    </flow>
+    <flow name="get:\pricebookentry:estore-sfdc-system-api-config">
+        <ee:transform doc:name="queryparameters" doc:id="39bd556d-eabe-4a8b-82e8-153b5c835aba" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="queryparameters" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"productcode": attributes.queryParams.'productcode' default null,
+	"pricebookname": attributes.queryParams.'pricebookname' default null
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="get-pricebookentrySubFlow" doc:id="7a679ade-4f16-4473-83d2-684cacc4a4cd" name="get-pricebookentrySubFlow"/>
+    </flow>
+    <flow name="post:\deletepricebookentry:application\json:estore-sfdc-system-api-config">
+		<flow-ref doc:name="deletepricebookentrySubFlow" doc:id="00a2746e-3148-4f43-8098-fdb1005b726f" name="deletepricebookentrySubFlow"/>
     </flow>
     <sub-flow name="create-productSubFlow" doc:id="e65a969a-0011-46ef-b851-550ecc8e2015">
 		<ee:transform doc:name="create-product-request" doc:id="d7b7c8fc-8bcb-4e42-a631-caf4a792ec35" >
@@ -127,6 +146,45 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 		<ee:transform doc:name="create-pricebookentry-response">
             <ee:message>
 				<ee:set-payload resource="dwl/create-pricebookentry-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="deletepricebookentrySubFlow" doc:id="c65f6f56-9ee3-40f1-b117-bfe0fd4080b8">
+        <ee:transform doc:name="delete-pricebookentry-request" doc:id="14aa526a-05db-41e9-b971-97e330d3a7d8" >
+			<ee:message >
+				<ee:set-payload resource="dwl/delete-pricebookentry-request.dwl" />
+			</ee:message>
+		</ee:transform>
+		 <salesforce:delete doc:name="delete-by-ids" doc:id="1bcde4a4-2fd0-4a93-b0de-ab0a8c8f1468" config-ref="Salesforce_Config">
+			<salesforce:ids ><![CDATA[#[payload]]]></salesforce:ids>
+		</salesforce:delete>
+		<ee:transform doc:name="delete-lead-response">
+            <ee:message>
+				<ee:set-payload resource="dwl/delete-pricebookentry-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="get-pricebookentrySubFlow" doc:id="5bef8646-b366-4915-8b31-7a4332889e6c">
+		<salesforce:query doc:name="get-pricebook-by-name-retrieve" doc:id="b2272322-18a8-4c4f-9821-1592b4c22a31" config-ref="Salesforce_Config" target="pricebook">
+            <salesforce:salesforce-query><![CDATA[${pricebookbyname.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'pricebookname' : vars.queryparameters.pricebookname
+}]]]></salesforce:parameters>
+        </salesforce:query>
+		<salesforce:query doc:name="get-pricebookentry-by-productcode-and-name" doc:id="36162610-82a0-4d30-9e6b-7335dcc54839" config-ref="Salesforce_Config">
+            <salesforce:salesforce-query><![CDATA[${pricebookbyproductcodeandname.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'productcode' : vars.queryparameters.productcode,
+	'pricebookid':vars.pricebook[0].Id
+}]]]></salesforce:parameters>
+        </salesforce:query>
+        <ee:transform doc:name="get-pricebookentry-by-productcode-and-name-response" doc:id="eabdc953-bc5f-4ab1-9c58-04b7cf7fb234">
+            <ee:message>
+				<ee:set-payload resource="dwl/get-pricebookentry-by-productcode-and-name-response.dwl" />
             </ee:message>
         </ee:transform>
 	</sub-flow>
