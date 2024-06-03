@@ -19,6 +19,7 @@ else
 {
     leadId: vars.res_leadbyleadname[0].Id,
     convertedStatus: "Closed - Converted",
+    (opportunityName: opportunityname) if (opportunityname != null),
     doNotCreateOpportunity: doNotCreateOpportunity
 }
 as Object {
