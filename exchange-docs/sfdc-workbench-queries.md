@@ -25,3 +25,12 @@ select Id, Name, CurrencyIsoCode, UnitPrice, ProductCode, Pricebook2Id__r.Name f
 
 Enable Logger for Salesforce Connector
 <AsyncLogger name="org.mule.extension.salesforce" level="DEBUG"/>
+
+SELECT ID, Name, Amount, CurrencyIsoCode, Pricebook2Id, TotalOpportunityQuantity from Opportunity where name = 'BSofSW - Ground-mounted Panels'
+
+SELECT ID, Name, Product2Id, ProductCode, Quantity, UnitPrice, TotalPrice from OpportunityLineItem where OpportunityId = '006bm000001kFxxAAE'
+
+
+SELECT ID, Name, Amount, CurrencyIsoCode, Pricebook2Id, TotalOpportunityQuantity, ExpectedRevenue from Opportunity where name = 'Saito - Ground-mounted Panels'
+
+SELECT ID, Name, Product2Id, ProductCode, Quantity, UnitPrice, TotalPrice from OpportunityLineItem where OpportunityId = '006bm000001kIivAAE'
