@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<flow name="get:\opportunity:estore-sfdc-system-api-config">
+        <ee:transform doc:name="queryparameters" doc:id="614b81b2-6e1b-4787-88c9-691a825c4cf2" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="queryparameters" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"opportunityname": attributes.queryParams.'opportunityname' default null
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="get-opportunitySubFlow" doc:id="cfa3b3b8-9d35-45df-895f-3abc4adf90aa" name="get-opportunitySubFlow"/>
+    </flow>
+    <flow name="post:\opportunity\(Id):estore-sfdc-system-api-config">
+ 		<logger level="INFO" doc:name="Logger" doc:id="0b127162-dad8-4cce-a369-825e643cea19" message="#[output application/json --- payload]"/>
+    </flow>
+	<sub-flow name="get-opportunitySubFlow" doc:id="b3121f60-95af-4c94-abf3-1961ec384900">
+        <salesforce:query doc:name="get-opportunity-by-name" doc:id="a4c4d832-96a2-4e6e-9196-dd36b96a6cd2" config-ref="Salesforce_Config">
+            <salesforce:salesforce-query><![CDATA[${opportunitybyname.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'opportunityname' : vars.queryparameters.opportunityname
+}]]]></salesforce:parameters>
+        </salesforce:query>
+		<ee:transform doc:name="get-opportunity-by-name-response.dwl" doc:id="4ded126e-0269-465e-ab5e-02627e88c3bf">
+            <ee:message>
+				<ee:set-payload resource="dwl/get-opportunity-by-name-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+</mule>

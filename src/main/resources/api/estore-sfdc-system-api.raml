@@ -240,4 +240,28 @@ title: estore-sfdc-system-api
       200:
         body:
           application/json:
-
+          
+/opportunity:
+  get:
+     queryParameters:
+      opportunityname:
+        description: opportunity name
+        type: string
+        required: true
+     description: get opportunity
+     responses:
+      200:
+        body:
+          application/json:
+  /{Id}:
+    post:
+      description: update opportunity
+      body:
+          application/json:
+            example: |
+              {
+                  "firstname": "John-1",
+                  "lastname": "Doe",
+                  "company": "Atlanta Products",
+                  "status": "Open"
+              }
