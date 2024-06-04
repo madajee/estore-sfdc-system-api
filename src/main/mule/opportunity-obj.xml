@@ -29,6 +29,14 @@ output application/json
         </ee:transform>
         <flow-ref doc:name="update-opportunity-by-idSubFlow" doc:id="985b8d99-7e74-44ea-acdb-2b193becf4ec" name="update-opportunity-by-idSubFlow"/>
     </flow>
+    <flow name="post:\opportunity\product:estore-sfdc-system-api-config">
+    	 <ee:transform doc:name="uri-params">
+            <ee:variables>
+                <ee:set-variable variableName="opportunityname">payload.opportunityname</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+    	<flow-ref doc:name="create-opportunityproductSubFlow" doc:id="6a424473-17a9-4097-acba-1419694bba91" name="create-opportunityproductSubFlow"/>  
+    </flow>
 	<sub-flow name="get-opportunitySubFlow" doc:id="b3121f60-95af-4c94-abf3-1961ec384900">
         <salesforce:query doc:name="get-opportunity-by-name" doc:id="a4c4d832-96a2-4e6e-9196-dd36b96a6cd2" config-ref="Salesforce_Config">
             <salesforce:salesforce-query><![CDATA[${opportunitybyname.select}]]></salesforce:salesforce-query>
@@ -77,6 +85,44 @@ output application/json
 		<ee:transform doc:name="get-opportunity-by-id-response" doc:id="be976c7c-59b1-4844-9c77-f1179890098f">
             <ee:message>
 				<ee:set-payload resource="dwl/update-opportunity-by-id-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="create-opportunityproductSubFlow" doc:id="ecbff75b-f627-4939-883f-4f5c3e3e2de7">
+		<salesforce:query doc:name="get-opportunity-by-name" doc:id="3c387b8d-472f-4d31-a53f-9d208f5109ef" config-ref="Salesforce_Config" target="opportunityrecord">
+            <salesforce:salesforce-query><![CDATA[${opportunitybyname.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'opportunityname' : vars.opportunityname
+}]]]></salesforce:parameters>
+        </salesforce:query>
+        <choice doc:name="Choice" doc:id="7f9b778c-8469-47be-b738-47225c8feee9" >
+			<when expression="#[vars.opportunityrecord[0].Id != null and vars.opportunityrecord[0].Pricebook2Id != null]">
+		 		<ee:transform doc:name="get-products-by-productcodelist-dynamicquery" doc:id="859d9659-60f3-4309-95d4-182533908b8a" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable resource="dwl/retrieve-productid-from-productcode.dwl" variableName="dynamicquery" />
+					</ee:variables>
+				</ee:transform>
+				<salesforce:query doc:name="get-product-by-productcode" doc:id="4726013d-e565-4bbd-ae8a-a881e5a24ec5" config-ref="Salesforce_Config" target="productlist">
+		            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query> 
+		        </salesforce:query>
+				<ee:transform doc:name="cerate-opportunity-product-request" doc:id="9e12384c-49c7-4470-93c3-655659f5f55e" >
+					<ee:message >
+						<ee:set-payload resource="dwl/cerate-opportunity-product-request.dwl" />
+					</ee:message>
+				</ee:transform>
+				<salesforce:create type="OpportunityLineItem" doc:name="CreateOpportunityProduct" doc:id="8875faeb-552b-452a-a9e9-6dfea17e8f56" config-ref="Salesforce_Config"/>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="e9f8168c-e70f-4a4f-a74b-4f759e40cc33" message="#['Opportunity Record doesnot exists or pricebookId is blank']"/>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="cerate-opportunity-product-response" doc:id="17928864-6be1-462f-82ca-ba3b77bc9cd9">
+            <ee:message>
+				<ee:set-payload resource="dwl/create-opportunity-product-response.dwl" />
             </ee:message>
         </ee:transform>
 	</sub-flow>
