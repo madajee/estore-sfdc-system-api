@@ -254,14 +254,12 @@ title: estore-sfdc-system-api
         body:
           application/json:
   /{Id}:
-    post:
+    put:
       description: update opportunity
       body:
           application/json:
             example: |
               {
-                  "firstname": "John-1",
-                  "lastname": "Doe",
-                  "company": "Atlanta Products",
-                  "status": "Open"
+                  "opportunitycurrency": "JPY",
+                  "opportunitypricebook": "Enterprise"
               }

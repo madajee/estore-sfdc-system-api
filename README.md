@@ -150,4 +150,16 @@ curl --location 'http://localhost:8081/api/productsbyproductcodelist' \
     "callsource": "postman"
 }'
 
+*************** GET /opportunity by Name  ******************
+curl --location 'http://localhost:8081/api/opportunity?opportunityname=Saito%20-%20Ground-mounted%20Panels'
+
+*************** Update /opportunity by Id  ******************
+curl --location --request PUT 'http://localhost:8081/api/opportunity/006bm000001l4JRAAY' \
+--header 'Content-Type: application/json' \
+--data '{
+    "opportunitypricebook": "Enterprise",
+    "opportunitycurrency": "JPY",
+    "opportunityamount": "20000"
+
+}'
 

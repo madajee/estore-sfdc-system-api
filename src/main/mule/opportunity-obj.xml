@@ -21,8 +21,13 @@ output application/json
 		</ee:transform>
 		<flow-ref doc:name="get-opportunitySubFlow" doc:id="cfa3b3b8-9d35-45df-895f-3abc4adf90aa" name="get-opportunitySubFlow"/>
     </flow>
-    <flow name="post:\opportunity\(Id):estore-sfdc-system-api-config">
- 		<logger level="INFO" doc:name="Logger" doc:id="0b127162-dad8-4cce-a369-825e643cea19" message="#[output application/json --- payload]"/>
+    <flow name="put:\opportunity\(Id):estore-sfdc-system-api-config">
+ 		 <ee:transform doc:name="uri-params">
+            <ee:variables>
+                <ee:set-variable variableName="Id">attributes.uriParams.'Id'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="update-opportunity-by-idSubFlow" doc:id="985b8d99-7e74-44ea-acdb-2b193becf4ec" name="update-opportunity-by-idSubFlow"/>
     </flow>
 	<sub-flow name="get-opportunitySubFlow" doc:id="b3121f60-95af-4c94-abf3-1961ec384900">
         <salesforce:query doc:name="get-opportunity-by-name" doc:id="a4c4d832-96a2-4e6e-9196-dd36b96a6cd2" config-ref="Salesforce_Config">
@@ -36,6 +41,42 @@ output application/json
 		<ee:transform doc:name="get-opportunity-by-name-response.dwl" doc:id="4ded126e-0269-465e-ab5e-02627e88c3bf">
             <ee:message>
 				<ee:set-payload resource="dwl/get-opportunity-by-name-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="update-opportunity-by-idSubFlow" doc:id="f06b642b-5805-47d4-abf9-f24f943080db">
+		<salesforce:query doc:name="get-opportunity-by-id" doc:id="30e3ee7f-267c-4ef6-b021-48615943427c" config-ref="Salesforce_Config" target="opportunityrecord">
+            <salesforce:salesforce-query><![CDATA[${opportunitybyid.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'Id' : vars.Id
+}]]]></salesforce:parameters>
+        </salesforce:query>
+		<choice doc:name="Choice" doc:id="249e237f-dd0d-4b79-a205-f57a28ead059" >
+			<when expression="#[vars.opportunityrecord.Id?]">
+				<salesforce:query doc:name="get-pricebook-by-name" doc:id="4be53cd4-7e03-4c84-a9ba-53850d989e95" config-ref="Salesforce_Config" target="pricebook">
+            <salesforce:salesforce-query><![CDATA[${pricebookbyname.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'pricebookname' : payload.opportunitypricebook
+}]]]></salesforce:parameters>
+        </salesforce:query>
+				<ee:transform doc:name="update-opportunity-by-id-request" doc:id="156c57a1-d8da-45d3-8eee-98b4b13ad024">
+            <ee:message>
+				<ee:set-payload resource="dwl/update-opportunity-by-id-request.dwl" />
+            </ee:message>
+        </ee:transform>
+				<salesforce:update type="Opportunity" doc:name="update-opportunity" doc:id="5ae1c046-b391-42e4-97ad-fc63cab979da" config-ref="Salesforce_Config" />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="6137ccca-8de4-48a3-b2c0-ada352784c82" message="#['Opportunity Record doesnot exists']"/>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="get-opportunity-by-id-response" doc:id="be976c7c-59b1-4844-9c77-f1179890098f">
+            <ee:message>
+				<ee:set-payload resource="dwl/update-opportunity-by-id-response.dwl" />
             </ee:message>
         </ee:transform>
 	</sub-flow>
