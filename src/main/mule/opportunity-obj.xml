@@ -97,7 +97,7 @@ output application/json
 	'opportunityname' : vars.opportunityname
 }]]]></salesforce:parameters>
         </salesforce:query>
-        <choice doc:name="Choice" doc:id="7f9b778c-8469-47be-b738-47225c8feee9" >
+		<choice doc:name="Choice" doc:id="7f9b778c-8469-47be-b738-47225c8feee9" >
 			<when expression="#[vars.opportunityrecord[0].Id != null and vars.opportunityrecord[0].Pricebook2Id != null]">
 		 		<ee:transform doc:name="get-products-by-productcodelist-dynamicquery" doc:id="859d9659-60f3-4309-95d4-182533908b8a" >
 					<ee:message >
@@ -107,6 +107,16 @@ output application/json
 					</ee:variables>
 				</ee:transform>
 				<salesforce:query doc:name="get-product-by-productcode" doc:id="4726013d-e565-4bbd-ae8a-a881e5a24ec5" config-ref="Salesforce_Config" target="productlist">
+		            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query> 
+		        </salesforce:query>
+				<ee:transform doc:name="get-pricebookentry-by-productcodelist-dynamicquery" doc:id="d67f59f9-d467-4c21-8d92-0d68c36bc576" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable resource="dwl/retrieve-pricebookentry-from-productcode.dwl" variableName="dynamicquery" />
+					</ee:variables>
+				</ee:transform>
+				<salesforce:query doc:name="get-product-by-productcode" doc:id="c6253e11-ea93-42f4-98c9-c7d89fb9af7c" config-ref="Salesforce_Config" target="pricebookentrylist">
 		            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query> 
 		        </salesforce:query>
 				<ee:transform doc:name="cerate-opportunity-product-request" doc:id="9e12384c-49c7-4470-93c3-655659f5f55e" >
