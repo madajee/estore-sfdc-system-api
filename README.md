@@ -180,3 +180,20 @@ curl --location 'http://localhost:8081/api/opportunity/product' \
     ]
 }'
 
+*************** remove-opportunity-product  ******************
+curl --location 'http://localhost:8081/api/opportunity/removeproduct' \
+--header 'Content-Type: application/json' \
+--data '{
+    "opportunityname": "Saito - Ground-mounted Panels",
+    "products": [
+        {
+            "productcode": "SPG-01",
+            "quantity": 35
+        },
+        {
+            "productcode": "SPG-02",
+            "quantity": 20
+        }
+    ]
+}'
+

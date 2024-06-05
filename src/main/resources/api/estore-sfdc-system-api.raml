@@ -286,3 +286,26 @@ title: estore-sfdc-system-api
         200:
           body:
             application/json:
+  /removeproduct:
+    post:
+      description: delete opportunity product
+      body:
+          application/json:
+            example: |
+                  {
+                    "opportunityname": "Saito - Ground-mounted Panels",
+                    "products": [
+                        {
+                          "productcode": "SPG-01",
+                          "quantity": 35
+                        },
+                        {
+                          "productcode": "SPG-02",
+                          "quantity": 20
+                        }
+                    ]
+                  }
+      responses:
+        200:
+          body:
+            application/json:

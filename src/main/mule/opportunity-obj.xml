@@ -30,12 +30,20 @@ output application/json
         <flow-ref doc:name="update-opportunity-by-idSubFlow" doc:id="985b8d99-7e74-44ea-acdb-2b193becf4ec" name="update-opportunity-by-idSubFlow"/>
     </flow>
     <flow name="post:\opportunity\product:estore-sfdc-system-api-config">
-    	 <ee:transform doc:name="uri-params">
+    	 <ee:transform doc:name="var-opportunityname">
             <ee:variables>
                 <ee:set-variable variableName="opportunityname">payload.opportunityname</ee:set-variable>
             </ee:variables>
         </ee:transform>
     	<flow-ref doc:name="create-opportunityproductSubFlow" doc:id="6a424473-17a9-4097-acba-1419694bba91" name="create-opportunityproductSubFlow"/>  
+    </flow>
+    <flow name="post:\opportunity\removeproduct:estore-sfdc-system-api-config">
+    	<ee:transform doc:name="var-opportunityname">
+            <ee:variables>
+                <ee:set-variable variableName="opportunityname">payload.opportunityname</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+    	<flow-ref doc:name="remove-opportunityproductSubFlow" doc:id="e5934b3b-fc37-41a9-8365-0c64b18ff540" name="remove-opportunityproductSubFlow"/>  
     </flow>
 	<sub-flow name="get-opportunitySubFlow" doc:id="b3121f60-95af-4c94-abf3-1961ec384900">
         <salesforce:query doc:name="get-opportunity-by-name" doc:id="a4c4d832-96a2-4e6e-9196-dd36b96a6cd2" config-ref="Salesforce_Config">
@@ -133,6 +141,46 @@ output application/json
 		<ee:transform doc:name="cerate-opportunity-product-response" doc:id="17928864-6be1-462f-82ca-ba3b77bc9cd9">
             <ee:message>
 				<ee:set-payload resource="dwl/create-opportunity-product-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="remove-opportunityproductSubFlow" doc:id="ab967f30-eb82-4018-86e9-741669d5ada7">
+		<salesforce:query doc:name="get-opportunity-by-name" doc:id="cb24f6e0-47a3-4cd9-93fe-c0312958e44a" config-ref="Salesforce_Config" target="opportunityrecord">
+            <salesforce:salesforce-query><![CDATA[${opportunitybyname.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'opportunityname' : vars.opportunityname
+}]]]></salesforce:parameters>
+        </salesforce:query>
+        <choice doc:name="Choice" doc:id="aa097d46-e2a0-4109-87ca-605c08363483" >
+			<when expression="#[vars.opportunityrecord[0].Id != null]">
+				<ee:transform doc:name="retrieve-products-from-opportunity-dynamicquery" doc:id="06b84357-567a-48c8-b507-c8ed0c421e07" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable resource="dwl/retrieve-products-from-opportunity.dwl" variableName="dynamicquery" />
+					</ee:variables>
+				</ee:transform>
+				<salesforce:query doc:name="get-product-by-productcode" doc:id="0478f4c6-75c0-49d4-92f4-18129f444be5" config-ref="Salesforce_Config" target="opportunityproductremovelist">
+		            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query> 
+		        </salesforce:query>
+		        <ee:transform doc:name="remove-opportunity-product-request" doc:id="b3e1518b-6ffe-4374-a163-13bd9a0e8654" >
+					<ee:message >
+						<ee:set-payload resource="dwl/remove-opportunity-product-request.dwl" />
+					</ee:message>
+				</ee:transform>
+				<salesforce:delete doc:name="delete-by-ids" doc:id="cadd0f58-15a4-4a33-b5cb-b0b687658645" config-ref="Salesforce_Config">
+					<salesforce:ids ><![CDATA[#[payload]]]></salesforce:ids>
+				</salesforce:delete>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="2a88ee93-a418-4139-a540-ee200bd92e80" message="#['Opportunity Record doesnot exists']"/>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="remove-opportunity-product-response" doc:id="a7d9a12c-e0dd-442a-8c8d-20a1899ec446">
+            <ee:message>
+				<ee:set-payload resource="dwl/remove-opportunity-product-response.dwl" />
             </ee:message>
         </ee:transform>
 	</sub-flow>
