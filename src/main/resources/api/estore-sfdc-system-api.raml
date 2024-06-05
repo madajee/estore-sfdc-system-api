@@ -329,3 +329,24 @@ title: estore-sfdc-system-api
         200:
           body:
             application/json:
+/account:
+  get:
+     queryParameters:
+      accountname:
+        description: accouunt name
+        type: string
+        required: true
+     description: get account
+     responses:
+      200:
+        body:
+          application/json:
+  /{Id}:
+    put:
+      description: update account
+      body:
+          application/json:
+            example: |
+              {
+                  "accountcurrency": "JPY"
+              }

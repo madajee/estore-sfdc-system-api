@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<flow name="get:\account:estore-sfdc-system-api-config">
+        <ee:transform doc:name="queryparameters" doc:id="b7b645f1-d3f0-4dc9-b0c7-9af665a229c0" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="queryparameters" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"accountname": attributes.queryParams.'accountname' default null
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="get-accountSubFlow" doc:id="f346501b-71d9-40c2-b9f8-c7c28ec859d7" name="get-accountSubFlow"/>
+    </flow>
+    <flow name="put:\account\(Id):estore-sfdc-system-api-config">
+ 		 <ee:transform doc:name="uri-params">
+            <ee:variables>
+                <ee:set-variable variableName="Id">attributes.uriParams.'Id'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="update-account-by-idSubFlow" doc:id="19d0651d-bc66-44e9-bfdc-54804ec701f8" name="update-account-by-idSubFlow"/>
+    </flow>
+    <sub-flow name="get-accountSubFlow" doc:id="594e091f-4516-4790-b0fc-a8e4e683c359">
+        <salesforce:query doc:name="get-opportunity-by-name" doc:id="e1e87551-846b-4976-89ff-87d8fe68ea3a" config-ref="Salesforce_Config">
+            <salesforce:salesforce-query><![CDATA[${accountbyaccountname.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'accountname' : vars.queryparameters.accountname
+}]]]></salesforce:parameters>
+        </salesforce:query>
+		<ee:transform doc:name="get-account-by-name-response" doc:id="aff5a474-0cd6-4016-a70d-21111c2e7a7f">
+            <ee:message>
+				<ee:set-payload resource="dwl/get-account-by-name-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="update-account-by-idSubFlow" doc:id="e2cd30e1-db0c-4089-ada8-94232340de13">
+		<salesforce:query doc:name="get-account-by-id" doc:id="9712ff0d-d1ab-4a62-a395-4ebfba679d54" config-ref="Salesforce_Config" target="accountrecord">
+            <salesforce:salesforce-query><![CDATA[${accountbyid.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'Id' : vars.Id
+}]]]></salesforce:parameters>
+        </salesforce:query>
+		<choice doc:name="Choice" doc:id="07ce5171-fed9-4cdc-b43e-05c8d565d587" >
+			<when expression="#[vars.accountrecord[0].Id != null]">
+		
+				<ee:transform doc:name="update-account-by-id-request" doc:id="df9aea4f-d4f1-4d07-a866-0a41b1b8f337">
+            <ee:message>
+				<ee:set-payload resource="dwl/update-account-by-id-request.dwl" />
+            </ee:message>
+        </ee:transform>
+				<salesforce:update type="Account" doc:name="update-opportunity" doc:id="bef13744-3f58-412e-9c57-2f96c1b56eb0" config-ref="Salesforce_Config" />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="4388f603-3b12-4e6d-a201-02c392367ee6" message="#['Account Record doesnot exists']"/>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="update-account-by-id-response" doc:id="4ec0a10f-81cc-46de-ac99-1dd31d29b786">
+            <ee:message>
+				<ee:set-payload resource="dwl/update-account-by-id-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+</mule>
