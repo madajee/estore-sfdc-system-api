@@ -46,6 +46,23 @@ output application/json
 		</ee:transform>
 		<flow-ref doc:name="get-pricebookentrySubFlow" doc:id="7a679ade-4f16-4473-83d2-684cacc4a4cd" name="get-pricebookentrySubFlow"/>
     </flow>
+    <flow name="get:\pricebookentrycurrency:estore-sfdc-system-api-config">
+        <ee:transform doc:name="queryparameters" doc:id="ff6e69f5-3d8c-418b-bc0b-f43bd9871f58" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="queryparameters" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"productcode": attributes.queryParams.'productcode' default null,
+	"pricebookname": attributes.queryParams.'pricebookname' default null,
+	"currencycode": attributes.queryParams.'currencycode' default null
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="get-pricebookentryCurencySubFlow" doc:id="40581322-8a2d-4d5e-b2b7-5d16b338e93a" name="get-pricebookentryCurencySubFlow"/>
+    </flow>
     <flow name="post:\deletepricebookentry:application\json:estore-sfdc-system-api-config">
 		<flow-ref doc:name="deletepricebookentrySubFlow" doc:id="00a2746e-3148-4f43-8098-fdb1005b726f" name="deletepricebookentrySubFlow"/>
     </flow>
@@ -185,6 +202,36 @@ output application/json
         <ee:transform doc:name="get-pricebookentry-by-productcode-and-name-response" doc:id="eabdc953-bc5f-4ab1-9c58-04b7cf7fb234">
             <ee:message>
 				<ee:set-payload resource="dwl/get-pricebookentry-by-productcode-and-name-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="get-pricebookentryCurencySubFlow" doc:id="e4f85f3e-504e-4035-b0d9-70ba0b4e7046">
+		<salesforce:query doc:name="get-pricebook-by-name-retrieve" doc:id="62969a20-69a7-4ccd-917c-7b9e81ad2006" config-ref="Salesforce_Config" target="pricebook">
+            <salesforce:salesforce-query><![CDATA[${pricebookbyname.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'pricebookname' : vars.queryparameters.pricebookname
+}]]]></salesforce:parameters>
+        </salesforce:query>
+		<ee:transform doc:name="dynamicquery" doc:id="1e0d05c9-3764-4f3c-8871-b18576e5afe8" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable resource="dwl/get-pricebookentrycurrency-dynamic-query.dwl" variableName="dynamicquery" />
+			</ee:variables>
+		</ee:transform>
+		<salesforce:query doc:name="PricebookEntry" doc:id="ec6e9a9d-4b8b-48aa-bd07-4564d57e3b53" config-ref="Salesforce_Config">
+            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+(if (vars.pricebook[0].Id != null)
+{'pricebookid' : vars.pricebook[0].Id} else {}) ++  (if (vars.queryparameters.productcode != null) {'productcode' : vars.queryparameters.productcode} else {}) ++ (if (vars.queryparameters.currencycode != null) {'currencycode' : vars.queryparameters.currencycode} else {})
+]]]></salesforce:parameters>
+        </salesforce:query>
+        <ee:transform doc:name="Transform Message" doc:id="93b36085-33f0-47fe-8c72-8b874275065c">
+            <ee:message>
+				<ee:set-payload resource="dwl/get-pricebookentrycurrency-response.dwl" />
             </ee:message>
         </ee:transform>
 	</sub-flow>

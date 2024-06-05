@@ -226,6 +226,26 @@ title: estore-sfdc-system-api
       200:
         body:
           application/json:
+/pricebookentrycurrency:
+  get:
+     queryParameters:
+      productcode:
+        description: productcode
+        type: string
+        required: false
+      pricebookname:
+        description: pricebookname
+        type: string
+        required: true
+      currencycode:
+        description: currencycode
+        type: string
+        required: false
+     description: get pricebook entries
+     responses:
+      200:
+        body:
+          application/json:
 /deletepricebookentry:
   post:
     description: delete pricebookentry
