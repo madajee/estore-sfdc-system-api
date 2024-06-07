@@ -208,7 +208,6 @@ output application/json
 	'opportunityname' : vars.queryparameters.opportunityname
 }]]]></salesforce:parameters>
         </salesforce:query>
-        <logger level="INFO" doc:name="Logger" doc:id="9e2eca5e-7ddb-4ca6-85e3-461a3129dd75" message="#[output application/json --- vars.opportunityrecord]"/>
         <choice doc:name="Choice" doc:id="94c80f1f-3625-4906-93d6-a8e969819af3" >
 			<when expression="#[vars.opportunityrecord[0].Id != null]">
 				<ee:transform doc:name="retrieve-quote-from-opportunity-dynamicquery" doc:id="42ef022d-0d74-4360-ac02-1687d030ef55" >
@@ -231,7 +230,6 @@ output application/json
 				<salesforce:query doc:name="get-quote-by-opportunity" doc:id="3695fe66-651f-4f59-a4e1-dd9ce95d4d50" config-ref="Salesforce_Config" target="opportunityquotelines">
 		            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query> 
 		        </salesforce:query>
-		        <logger level="INFO" doc:name="Logger" doc:id="fc5e6d9f-638c-4a0b-90dd-b89eb8b7e46a" message="#[output application/json --- vars.opportunityquotelines]"/>
 		    </when>
 		    <otherwise>
 		    	<logger level="INFO" doc:name="Logger" doc:id="95b9fe96-3b60-4d5e-af69-24517293f7cf" message="#['opportunity doesnt exists']"/>

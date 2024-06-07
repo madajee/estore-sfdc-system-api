@@ -1,5 +1,6 @@
 %dw 2.0
 output application/json
+fun getQuotelines(quoteId) = vars.opportunityquotelines filter ($.QuoteId == quoteId)
 ---
 if (vars.opportunityrecord[0].Id != null)
 {
@@ -8,7 +9,8 @@ if (vars.opportunityrecord[0].Id != null)
   	  payload:  vars.opportunityquotes map() -> {
 		    name: $.Name,
 		    opportunityname: $.Opportunity.Name,
-		    quotelines: vars.opportunityquotelines map() -> {
+		    quoteId: $.Id,
+		    quotelines: getQuotelines($.Id) map() -> {
 		    	productname: $.Product2.Name,
 		    	quantity: $.Quantity
 		    }
