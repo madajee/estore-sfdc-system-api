@@ -21,6 +21,21 @@ output application/json
 		</ee:transform>
 		<flow-ref doc:name="get-opportunitySubFlow" doc:id="cfa3b3b8-9d35-45df-895f-3abc4adf90aa" name="get-opportunitySubFlow"/>
     </flow>
+	<flow name="get:\opportunity\quote:estore-sfdc-system-api-config">
+        <ee:transform doc:name="queryparameters" doc:id="8e49e7de-3610-47c1-ace4-594cef8d8bba" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="queryparameters" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"opportunityname": attributes.queryParams.'opportunityname' default null
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="get-opportunityquoteSubFlow" doc:id="01047068-39eb-48ef-8dff-20bd06d77fe0" name="get-opportunityquoteSubFlow"/>
+    </flow>
     <flow name="put:\opportunity\(Id):estore-sfdc-system-api-config">
  		 <ee:transform doc:name="uri-params">
             <ee:variables>
@@ -184,4 +199,48 @@ output application/json
             </ee:message>
         </ee:transform>
 	</sub-flow>
+	<sub-flow name="get-opportunityquoteSubFlow" doc:id="93069d28-9208-492a-8eef-561691fd8442">
+        <salesforce:query doc:name="get-opportunity-by-name" doc:id="037efc89-b744-41f5-bfb5-61e869a79035" config-ref="Salesforce_Config" target="opportunityrecord">
+            <salesforce:salesforce-query><![CDATA[${opportunitybyname.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'opportunityname' : vars.queryparameters.opportunityname
+}]]]></salesforce:parameters>
+        </salesforce:query>
+        <logger level="INFO" doc:name="Logger" doc:id="9e2eca5e-7ddb-4ca6-85e3-461a3129dd75" message="#[output application/json --- vars.opportunityrecord]"/>
+        <choice doc:name="Choice" doc:id="94c80f1f-3625-4906-93d6-a8e969819af3" >
+			<when expression="#[vars.opportunityrecord[0].Id != null]">
+				<ee:transform doc:name="retrieve-quote-from-opportunity-dynamicquery" doc:id="42ef022d-0d74-4360-ac02-1687d030ef55" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable resource="dwl/retrieve-quotes-from-opportunity.dwl" variableName="dynamicquery" />
+					</ee:variables>
+				</ee:transform>
+				<salesforce:query doc:name="get-quote-by-opportunity" doc:id="1384af7c-bdf8-41d0-9aa6-1a37a69b0f94" config-ref="Salesforce_Config" target="opportunityquotes">
+		            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query> 
+		        </salesforce:query>
+				<ee:transform doc:name="retrieve-quotelines-from-opportunity-dynamicquery" doc:id="5dc84db4-87dd-4873-9703-9d1395be56a5" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable resource="dwl/retrieve-quotelines-from-opportunity.dwl" variableName="dynamicquery" />
+					</ee:variables>
+				</ee:transform>
+				<salesforce:query doc:name="get-quote-by-opportunity" doc:id="3695fe66-651f-4f59-a4e1-dd9ce95d4d50" config-ref="Salesforce_Config" target="opportunityquotelines">
+		            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query> 
+		        </salesforce:query>
+		        <logger level="INFO" doc:name="Logger" doc:id="fc5e6d9f-638c-4a0b-90dd-b89eb8b7e46a" message="#[output application/json --- vars.opportunityquotelines]"/>
+		    </when>
+		    <otherwise>
+		    	<logger level="INFO" doc:name="Logger" doc:id="95b9fe96-3b60-4d5e-af69-24517293f7cf" message="#['opportunity doesnt exists']"/>
+		    </otherwise>
+		</choice>
+		<ee:transform doc:name="get-opportunity-quote-response" doc:id="49b4f479-1cf9-46f9-ba59-23fed76fb047">
+            <ee:message>
+				<ee:set-payload resource="dwl/get-quote-by-opportunity-response.dwl" />
+            </ee:message>
+        </ee:transform>  
+    </sub-flow>
 </mule>

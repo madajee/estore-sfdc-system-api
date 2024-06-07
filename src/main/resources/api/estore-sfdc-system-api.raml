@@ -329,6 +329,18 @@ title: estore-sfdc-system-api
         200:
           body:
             application/json:
+  /quote:
+    get:
+       queryParameters:
+        opportunityname:
+          description: opportunity name
+          type: string
+          required: true
+       description: get opportunity
+       responses:
+        200:
+          body:
+            application/json:
 /account:
   get:
      queryParameters:
