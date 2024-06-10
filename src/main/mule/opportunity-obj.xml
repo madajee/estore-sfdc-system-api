@@ -60,6 +60,18 @@ output application/json
         </ee:transform>
     	<flow-ref doc:name="remove-opportunityproductSubFlow" doc:id="e5934b3b-fc37-41a9-8365-0c64b18ff540" name="remove-opportunityproductSubFlow"/>  
     </flow>
+    <flow name="post:\opportunity\quote:estore-sfdc-system-api-config">
+    	 <ee:transform doc:name="var-opportunityname">
+            <ee:variables>
+                <ee:set-variable variableName="opportunityname">payload.opportunityname</ee:set-variable>
+                <ee:set-variable variableName="quotename">payload.quotename</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+    	<flow-ref doc:name="create-opportunityquoteSubFlow" doc:id="85a59adb-fce8-4fb0-a5d5-431db0eba443" name="create-opportunityquoteSubFlow"/>  
+    </flow>
+    <flow name="post:\deletequotes:application\json:estore-sfdc-system-api-config">
+		<flow-ref doc:name="deletequotesSubFlow" doc:id="d0231105-af46-4a5f-8dcd-4b1df30a1efa" name="deletequotesSubFlow"/>
+    </flow>
 	<sub-flow name="get-opportunitySubFlow" doc:id="b3121f60-95af-4c94-abf3-1961ec384900">
         <salesforce:query doc:name="get-opportunity-by-name" doc:id="a4c4d832-96a2-4e6e-9196-dd36b96a6cd2" config-ref="Salesforce_Config">
             <salesforce:salesforce-query><![CDATA[${opportunitybyname.select}]]></salesforce:salesforce-query>
@@ -142,9 +154,9 @@ output application/json
 				<salesforce:query doc:name="get-product-by-productcode" doc:id="c6253e11-ea93-42f4-98c9-c7d89fb9af7c" config-ref="Salesforce_Config" target="pricebookentrylist">
 		            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query> 
 		        </salesforce:query>
-				<ee:transform doc:name="cerate-opportunity-product-request" doc:id="9e12384c-49c7-4470-93c3-655659f5f55e" >
+				<ee:transform doc:name="create-opportunity-product-request" doc:id="9e12384c-49c7-4470-93c3-655659f5f55e" >
 					<ee:message >
-						<ee:set-payload resource="dwl/cerate-opportunity-product-request.dwl" />
+						<ee:set-payload resource="dwl/create-opportunity-product-request.dwl" />
 					</ee:message>
 				</ee:transform>
 				<salesforce:create type="OpportunityLineItem" doc:name="CreateOpportunityProduct" doc:id="8875faeb-552b-452a-a9e9-6dfea17e8f56" config-ref="Salesforce_Config"/>
@@ -241,4 +253,40 @@ output application/json
             </ee:message>
         </ee:transform>  
     </sub-flow>
+	<sub-flow name="create-opportunityquoteSubFlow" doc:id="547ddf0a-8b2c-4266-82db-5b016540d34f">
+		<salesforce:query doc:name="get-opportunity-by-name" doc:id="0426b8aa-b8ab-4d38-b922-5d853f29c72b" config-ref="Salesforce_Config" target="opportunityrecord">
+            <salesforce:salesforce-query><![CDATA[${opportunitybyname.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'opportunityname' : vars.opportunityname
+}]]]></salesforce:parameters>
+        </salesforce:query>
+        <ee:transform doc:name="create-opportunity-quote-request" doc:id="e02803a4-5ec4-4a93-bd8a-8ce34a7ed014">
+            <ee:message>
+				<ee:set-payload resource="dwl/create-opportunity-quote-request.dwl" />
+            </ee:message>
+        </ee:transform>
+        <salesforce:create type="Quote" doc:name="CreateOpportunityQuote" doc:id="8457a059-dad0-40d0-b7dd-79a5d2120e1b" config-ref="Salesforce_Config"/>
+		<ee:transform doc:name="create-opportunity-quote-response" doc:id="885d2c70-be11-4538-8505-878e6d684723">
+            <ee:message>
+				<ee:set-payload resource="dwl/create-opportunity-quote-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="deletequotesSubFlow" doc:id="8cc2dac1-78fa-492c-b954-57ed8ee8f3c0">
+        <ee:transform doc:name="delete-quote-request" doc:id="37ef7466-c2eb-4882-9a86-b2ab0338e224" >
+			<ee:message >
+				<ee:set-payload resource="dwl/delete-quote-request.dwl" />
+			</ee:message>
+		</ee:transform>
+		 <salesforce:delete doc:name="delete-by-ids" doc:id="2e017e5f-b851-4ca7-a1bd-812aec5a0352" config-ref="Salesforce_Config">
+			<salesforce:ids ><![CDATA[#[payload]]]></salesforce:ids>
+		</salesforce:delete>
+		<ee:transform doc:name="delete-quote-response">
+            <ee:message>
+				<ee:set-payload resource="dwl/delete-quote-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
 </mule>

@@ -336,11 +336,38 @@ title: estore-sfdc-system-api
           description: opportunity name
           type: string
           required: true
-       description: get opportunity
+       description: get quotes on the opportunity
        responses:
         200:
           body:
             application/json:
+    post:
+      description: create quote for the opportunity
+      body:
+          application/json:
+            example: |
+                  {
+                    "opportunityname": "Saito - Ground-mounted Panels",
+                    "quotename": "test-quote-1"
+                  }
+      responses:
+        200:
+          body:
+            application/json:
+/deletequotes:
+  post:
+    description: delete products
+    body:
+        application/json:
+          example: |
+            {
+              "quoteidsfordelete": ["0Q0bm0000003a6zCAA", "0Q0bm0000003a8bCAA"],
+              "callsource": "postman"
+            }
+    responses:
+      200:
+        body:
+          application/json:
 /account:
   get:
      queryParameters:
