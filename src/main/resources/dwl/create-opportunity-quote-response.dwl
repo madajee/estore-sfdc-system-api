@@ -5,7 +5,8 @@ if (vars.opportunityrecord[0].Id != null)
 {
   response: {
   	  message: "create opportunity quote successful",
-  	  payload: payload
+  	  quotesresponse: vars.opportunityquote,
+  	  quotelinesresponse: vars.opportunityquotelineitem
   }
 
 } as Object {encoding: "UTF-8", mediaType: "application/json"}

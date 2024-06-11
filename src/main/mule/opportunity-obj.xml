@@ -262,13 +262,53 @@ output application/json
 	'opportunityname' : vars.opportunityname
 }]]]></salesforce:parameters>
         </salesforce:query>
+        <choice doc:name="Choice" doc:id="3fee7c76-1405-42e4-af38-cc78c4d3d009" >
+			<when expression="#[vars.opportunityrecord[0].Id != null]">
+				<ee:transform doc:name="retrieve-products-from-opportunity-dynamicquery" doc:id="9cde4c26-4791-40d4-a605-63f315d152ed" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable resource="dwl/retrieve-products-from-opportunity.dwl" variableName="dynamicquery" />
+					</ee:variables>
+				</ee:transform>
+				<salesforce:query doc:name="get-products-for-opportunity" doc:id="87b627d4-7c45-411c-bee0-da93f317c8da" config-ref="Salesforce_Config" target="opportunityproduct">
+		            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query> 
+		        </salesforce:query>
+		        <ee:transform doc:name="get-opportunitylines-pricebookentry-dynamicquery" doc:id="23f48f1d-6c9c-43db-8ec6-8d5bf0f8bada" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable resource="dwl/get-opportunitylines-pricebookentry-dynamicquery.dwl" variableName="dynamicquery" />
+					</ee:variables>
+				</ee:transform>
+				<salesforce:query doc:name="get-opportunitylines-pricebookentry" doc:id="2666f5a9-b788-4d68-a68f-73d05474f016" config-ref="Salesforce_Config" target="pricebookentry">
+           			<salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query> 
+        		</salesforce:query>
+		    </when>
+		    <otherwise>
+		    	<logger level="INFO" doc:name="Logger" doc:id="e76c257a-6919-467a-a657-57115809a06f" message="#['Opportunity Record doesnot exists']"/>
+		    </otherwise>
+		 </choice>
         <ee:transform doc:name="create-opportunity-quote-request" doc:id="e02803a4-5ec4-4a93-bd8a-8ce34a7ed014">
             <ee:message>
 				<ee:set-payload resource="dwl/create-opportunity-quote-request.dwl" />
             </ee:message>
         </ee:transform>
-        <salesforce:create type="Quote" doc:name="CreateOpportunityQuote" doc:id="8457a059-dad0-40d0-b7dd-79a5d2120e1b" config-ref="Salesforce_Config"/>
-		<ee:transform doc:name="create-opportunity-quote-response" doc:id="885d2c70-be11-4538-8505-878e6d684723">
+        <salesforce:create type="Quote" doc:name="CreateOpportunityQuote" doc:id="8457a059-dad0-40d0-b7dd-79a5d2120e1b" config-ref="Salesforce_Config" target="opportunityquote"/>
+		<ee:transform doc:name="create-opportunity-quote-lines-request" doc:id="9c843342-be6e-4bf2-8fa7-915e673be0d1">
+            <ee:message>
+				<ee:set-payload resource="dwl/create-opportunity-quote-lines-request.dwl" />
+            </ee:message>
+        </ee:transform>
+        <choice doc:name="Choice" doc:id="81822fa1-7eef-40f6-9edb-ba78b4651b22" >
+			<when expression="#[vars.opportunityquote.successful == true]">
+				<salesforce:create type="QuoteLineItem" doc:name="CreateOpportunityQuoteLines" doc:id="5247d827-cde5-46be-a212-12543f93576a" config-ref="Salesforce_Config" target="opportunityquotelineitem" />
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="Logger" doc:id="1af6a853-fb59-455b-9e1e-b0d953c183f8" message="#['Problem creating the quote']"/>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="create-opportunity-quote-response" doc:id="8203b021-9c46-45c2-94cd-39fbe4517d5d">
             <ee:message>
 				<ee:set-payload resource="dwl/create-opportunity-quote-response.dwl" />
             </ee:message>
