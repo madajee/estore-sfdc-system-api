@@ -232,16 +232,24 @@ output application/json
 				<salesforce:query doc:name="get-quote-by-opportunity" doc:id="1384af7c-bdf8-41d0-9aa6-1a37a69b0f94" config-ref="Salesforce_Config" target="opportunityquotes">
 		            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query> 
 		        </salesforce:query>
-				<ee:transform doc:name="retrieve-quotelines-from-opportunity-dynamicquery" doc:id="5dc84db4-87dd-4873-9703-9d1395be56a5" >
-					<ee:message >
-					</ee:message>
-					<ee:variables >
-						<ee:set-variable resource="dwl/retrieve-quotelines-from-opportunity.dwl" variableName="dynamicquery" />
-					</ee:variables>
-				</ee:transform>
-				<salesforce:query doc:name="get-quote-by-opportunity" doc:id="3695fe66-651f-4f59-a4e1-dd9ce95d4d50" config-ref="Salesforce_Config" target="opportunityquotelines">
-		            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query> 
-		        </salesforce:query>
+		        <choice doc:name="Choice" doc:id="0cae814c-9603-4b2c-b6e7-71cce438b865" >
+					<when expression="#[vars.opportunityquotes[0].Id != null]">
+						<ee:transform doc:name="retrieve-quotelines-from-opportunity-dynamicquery" doc:id="1ea27b34-36fe-4138-a605-ea4cd2dd0363" >
+							<ee:message >
+							</ee:message>
+							<ee:variables >
+								<ee:set-variable resource="dwl/retrieve-quotelines-from-opportunity.dwl" variableName="dynamicquery" />
+							</ee:variables>
+						</ee:transform>
+						<salesforce:query doc:name="get-quote-by-opportunity" doc:id="bb82ddf4-8347-4bd6-872d-457d00124481" config-ref="Salesforce_Config" target="opportunityquotelines">
+				            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query> 
+				        </salesforce:query>
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="Logger" doc:id="60a476a8-d313-4b0d-8421-3c6ba8e94759" message="#['Opportunity doesnt have a quote']"/>
+					</otherwise>
+				</choice>
+				
 		    </when>
 		    <otherwise>
 		    	<logger level="INFO" doc:name="Logger" doc:id="95b9fe96-3b60-4d5e-af69-24517293f7cf" message="#['opportunity doesnt exists']"/>
