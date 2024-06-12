@@ -197,3 +197,24 @@ curl --location 'http://localhost:8081/api/opportunity/removeproduct' \
     ]
 }'
 
+*************** GET /opportunity/quote by Opportunity Name  ******************
+curl --location 'http://localhost:8081/api/opportunity/quote?opportunityname=Saito%20-%20Ground-mounted%20Panels'
+
+*************** POST /opportunity/quote by Opportunity Name  ******************
+curl --location 'http://localhost:8081/api/opportunity/quote' \
+--header 'Content-Type: application/json' \
+--data '{
+    "opportunityname": "Saito - Ground-mounted Panels",
+    "quotename": "80 Cell Ground-mounted Panels"
+}'
+
+*************** POST /deletequotes  ******************
+curl --location 'http://localhost:8081/api/deletequotes' \
+--header 'Content-Type: application/json' \
+--data '{
+    "quoteidsfordelete": [
+        "0Q0bm0000003kj3CAA",
+        "0Q0bm0000003khRCAQ"
+    ],
+    "callsource": "postman"
+}'

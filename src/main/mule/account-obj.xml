@@ -29,8 +29,23 @@ output application/json
         </ee:transform>
         <flow-ref doc:name="update-account-by-idSubFlow" doc:id="19d0651d-bc66-44e9-bfdc-54804ec701f8" name="update-account-by-idSubFlow"/>
     </flow>
+	<flow name="get:\account\contract:estore-sfdc-system-api-config">
+        <ee:transform doc:name="queryparameters" doc:id="997f05e2-ab76-4167-a2fd-0cdeef4566b6" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="queryparameters" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"accountname": attributes.queryParams.'accountname' default null
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="get-accountcontractSubFlow" doc:id="31e92afe-6a80-41c9-89ce-938ffddc1216" name="get-accountcontractSubFlow"/>
+    </flow>
     <sub-flow name="get-accountSubFlow" doc:id="594e091f-4516-4790-b0fc-a8e4e683c359">
-        <salesforce:query doc:name="get-opportunity-by-name" doc:id="e1e87551-846b-4976-89ff-87d8fe68ea3a" config-ref="Salesforce_Config">
+        <salesforce:query doc:name="get-account-by-name" doc:id="e1e87551-846b-4976-89ff-87d8fe68ea3a" config-ref="Salesforce_Config">
             <salesforce:salesforce-query><![CDATA[${accountbyaccountname.select}]]></salesforce:salesforce-query>
             <salesforce:parameters><![CDATA[#[output application/java
 ---
@@ -70,6 +85,36 @@ output application/json
 		<ee:transform doc:name="update-account-by-id-response" doc:id="4ec0a10f-81cc-46de-ac99-1dd31d29b786">
             <ee:message>
 				<ee:set-payload resource="dwl/update-account-by-id-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="get-accountcontractSubFlow" doc:id="7efc31b2-2600-43bc-a1b2-1b3b2e7c7e31">
+		<salesforce:query doc:name="get-account-by-name" doc:id="86adba15-922c-4bb8-9f73-e798289cad26" config-ref="Salesforce_Config" target="accountrecord">
+            <salesforce:salesforce-query><![CDATA[${accountbyaccountname.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'accountname' : vars.queryparameters.accountname
+}]]]></salesforce:parameters>
+        </salesforce:query>
+<choice doc:name="Choice" doc:id="25718be1-5be7-492a-913c-4c10ba596710" >
+			<when expression="#[vars.accountrecord[0].Id != null]">
+				<salesforce:query doc:name="get-contracts-by-accountname" doc:id="5baf8957-9f3f-4d64-bc7f-b782b727c3d4" config-ref="Salesforce_Config" target="contracts">
+            <salesforce:salesforce-query><![CDATA[${contractbyaccountid.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'accountid' : vars.accountrecord[0].Id
+}]]]></salesforce:parameters>
+        </salesforce:query>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="2debddea-65cb-474c-836d-6905df7a45d1" message="#['Account Record doesnot exists']"/>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="get-contract-by-account-response" doc:id="cc7a0466-b45e-4077-8bbd-0607a5088ade">
+            <ee:message>
+				<ee:set-payload resource="dwl/get-contract-by-account-response.dwl" />
             </ee:message>
         </ee:transform>
 	</sub-flow>

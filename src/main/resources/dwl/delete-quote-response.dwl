@@ -4,7 +4,7 @@ output application/json
 {
   response: {
   	  message: "remove quotes successful",
-  	  rpayload: payload.items map() -> {
+  	  payload: payload.items map() -> {
   	  	id: $.id,
   	  	status: $.successful
   	  }
