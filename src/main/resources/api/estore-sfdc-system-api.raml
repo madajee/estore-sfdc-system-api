@@ -423,3 +423,17 @@ title: estore-sfdc-system-api
         200:
           body:
             application/json:
+/deletecontracts:
+  post:
+    description: delete contracts
+    body:
+        application/json:
+          example: |
+            {
+              "contractidsfordelete": ["0Q0bm0000003a6zCAA", "0Q0bm0000003a8bCAA"],
+              "callsource": "postman"
+            }
+    responses:
+      200:
+        body:
+          application/json:

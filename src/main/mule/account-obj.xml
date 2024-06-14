@@ -58,6 +58,9 @@ payload.'accountname' default null
 		</ee:transform>
 		<flow-ref doc:name="create-accountcontractSubFlow" doc:id="ca60cbfe-bd24-40d1-82fb-9b90dcd8de4f" name="create-accountcontractSubFlow"/>
     </flow>
+    <flow name="post:\deletecontracts:application\json:estore-sfdc-system-api-config">
+		<flow-ref doc:name="deletecontractsSubFlow" doc:id="995ccf4d-f2fa-4456-b796-d47974a815ba" name="deletecontractsSubFlow"/>
+    </flow>
     <sub-flow name="get-accountSubFlow" doc:id="594e091f-4516-4790-b0fc-a8e4e683c359">
         <salesforce:query doc:name="get-account-by-name" doc:id="e1e87551-846b-4976-89ff-87d8fe68ea3a" config-ref="Salesforce_Config">
             <salesforce:salesforce-query><![CDATA[${accountbyaccountname.select}]]></salesforce:salesforce-query>
@@ -157,6 +160,21 @@ payload.'accountname' default null
 		<ee:transform doc:name="create-contract-for-account-response" doc:id="eba29df9-63b3-445f-bd1e-3d37b9de15f5">
             <ee:message>
 				<ee:set-payload resource="dwl/create-contract-for-account-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="deletecontractsSubFlow" doc:id="665d693e-5fda-4c10-be40-ffa4c9d5bd36">
+        <ee:transform doc:name="delete-contract-request.dwl" doc:id="0263f113-1e98-4fb6-9f0b-d6fc8b799933" >
+			<ee:message >
+				<ee:set-payload resource="dwl/delete-contract-request.dwl" />
+			</ee:message>
+		</ee:transform>
+		 <salesforce:delete doc:name="delete-by-ids" doc:id="16ee8660-9ad1-4449-83e4-208c0fa57244" config-ref="Salesforce_Config">
+			<salesforce:ids ><![CDATA[#[payload]]]></salesforce:ids>
+		</salesforce:delete>
+		<ee:transform doc:name="delete-contracts-response">
+            <ee:message>
+				<ee:set-payload resource="dwl/delete-contracts-response.dwl" />
             </ee:message>
         </ee:transform>
 	</sub-flow>
