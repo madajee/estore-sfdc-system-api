@@ -406,11 +406,19 @@ title: estore-sfdc-system-api
       body:
           application/json:
             example: |
-                  {
-                    "accountname": "Boy Scouts of the Southwest",
-                    "contractstartdate": "07-01-2024",
-                    "contractterm": "12"
-                  }
+              {
+                  "accountname": "Boy Scouts of the Southwest",
+                  "contracts": [
+                      {
+                          "contractstartdate": "07-02-2024",
+                          "contractterm": "12"
+                      },
+                      {
+                          "contractstartdate": "07-02-2025",
+                          "contractterm": "12"
+                      }
+                  ]
+              }
       responses:
         200:
           body:

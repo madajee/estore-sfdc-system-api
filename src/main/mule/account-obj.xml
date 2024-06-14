@@ -44,6 +44,20 @@ output application/json
 		</ee:transform>
 		<flow-ref doc:name="get-accountcontractSubFlow" doc:id="31e92afe-6a80-41c9-89ce-938ffddc1216" name="get-accountcontractSubFlow"/>
     </flow>
+    <flow name="post:\account\contract:estore-sfdc-system-api-config">
+		<ee:transform doc:name="accountname" doc:id="2635e114-32f8-424d-8b94-18f7d8407600" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="accountname" ><![CDATA[%dw 2.0
+output application/java
+---
+payload.'accountname' default null
+]]></ee:set-variable>			
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="create-accountcontractSubFlow" doc:id="ca60cbfe-bd24-40d1-82fb-9b90dcd8de4f" name="create-accountcontractSubFlow"/>
+    </flow>
     <sub-flow name="get-accountSubFlow" doc:id="594e091f-4516-4790-b0fc-a8e4e683c359">
         <salesforce:query doc:name="get-account-by-name" doc:id="e1e87551-846b-4976-89ff-87d8fe68ea3a" config-ref="Salesforce_Config">
             <salesforce:salesforce-query><![CDATA[${accountbyaccountname.select}]]></salesforce:salesforce-query>
@@ -97,7 +111,7 @@ output application/json
 	'accountname' : vars.queryparameters.accountname
 }]]]></salesforce:parameters>
         </salesforce:query>
-<choice doc:name="Choice" doc:id="25718be1-5be7-492a-913c-4c10ba596710" >
+		<choice doc:name="Choice" doc:id="25718be1-5be7-492a-913c-4c10ba596710" >
 			<when expression="#[vars.accountrecord[0].Id != null]">
 				<salesforce:query doc:name="get-contracts-by-accountname" doc:id="5baf8957-9f3f-4d64-bc7f-b782b727c3d4" config-ref="Salesforce_Config" target="contracts">
             <salesforce:salesforce-query><![CDATA[${contractbyaccountid.select}]]></salesforce:salesforce-query>
@@ -115,6 +129,34 @@ output application/json
 		<ee:transform doc:name="get-contract-by-account-response" doc:id="cc7a0466-b45e-4077-8bbd-0607a5088ade">
             <ee:message>
 				<ee:set-payload resource="dwl/get-contract-by-account-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="create-accountcontractSubFlow" doc:id="64741357-6e51-46c4-9609-c24f290b3e99">
+		<salesforce:query doc:name="get-account-by-name" doc:id="e46d7586-744a-4823-93dc-77f8f0d1c675" config-ref="Salesforce_Config" target="accountrecord">
+            <salesforce:salesforce-query><![CDATA[${accountbyaccountname.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'accountname' : vars.accountname
+}]]]></salesforce:parameters>
+        </salesforce:query>
+		<choice doc:name="Choice" doc:id="1f84c4cd-42cd-4411-8af5-540972675ea2" >
+			<when expression="#[vars.accountrecord[0].Id != null]">
+				<ee:transform doc:name="create-contract-for-account-request" doc:id="2da04cd2-071d-4923-8ba6-e9f04150f012">
+		            <ee:message>
+						<ee:set-payload resource="dwl/create-contract-for-account-request.dwl" />
+		            </ee:message>
+        		</ee:transform>
+ 				<salesforce:create type="Contract" doc:name="CreateContract" doc:id="eb559c2f-2f6c-4953-b5f2-b8640b422152" config-ref="Salesforce_Config"/>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="b4e19ece-5af5-4b53-832c-3976e182666a" message="#['Account Record doesnot exists']"/>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="create-contract-for-account-response" doc:id="eba29df9-63b3-445f-bd1e-3d37b9de15f5">
+            <ee:message>
+				<ee:set-payload resource="dwl/create-contract-for-account-response.dwl" />
             </ee:message>
         </ee:transform>
 	</sub-flow>
