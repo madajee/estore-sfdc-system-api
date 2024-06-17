@@ -461,3 +461,17 @@ title: estore-sfdc-system-api
       200:
         body:
           application/json:
+/deleteorders:
+  post:
+    description: delete orders
+    body:
+        application/json:
+          example: |
+            {
+              "orderidsfordelete": ["0Q0bm0000003a6zCAA", "0Q0bm0000003a8bCAA"],
+              "callsource": "postman"
+            }
+    responses:
+      200:
+        body:
+          application/json:

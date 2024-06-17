@@ -90,6 +90,9 @@ payload.'contractnumber' default null
 		</ee:transform>
 		<flow-ref doc:name="create-contractorderSubFlow" doc:id="dbb81db8-b06b-41c7-9a9c-1c42b9ab49f8" name="create-contractorderSubFlow"/>
     </flow>
+   	<flow name="post:\deleteorders:application\json:estore-sfdc-system-api-config">
+		<flow-ref doc:name="deleteordersSubFlow" doc:id="c2e0c580-30a9-4bd2-8b11-86d26f7e9edf" name="deleteordersSubFlow"/>
+    </flow>
     <sub-flow name="get-accountSubFlow" doc:id="594e091f-4516-4790-b0fc-a8e4e683c359">
         <salesforce:query doc:name="get-account-by-name" doc:id="e1e87551-846b-4976-89ff-87d8fe68ea3a" config-ref="Salesforce_Config">
             <salesforce:salesforce-query><![CDATA[${accountbyaccountname.select}]]></salesforce:salesforce-query>
@@ -208,31 +211,17 @@ payload.'contractnumber' default null
         </ee:transform>
 	</sub-flow>
 	<sub-flow name="get-contractorderSubFlow" doc:id="6ae8c416-53c2-43ea-bfd4-c95c550f3c52">
-		<salesforce:query doc:name="get-contract-by-contractnumber" doc:id="2539faff-9e8e-432f-9c15-c1efaddd91cc" config-ref="Salesforce_Config" target="contractrecord">
-            <salesforce:salesforce-query><![CDATA[${contractbycontractnumber.select}]]></salesforce:salesforce-query>
+		<salesforce:query doc:name="get-order-by-contractnumber" doc:id="2539faff-9e8e-432f-9c15-c1efaddd91cc" config-ref="Salesforce_Config" target="orders">
+            <salesforce:salesforce-query><![CDATA[${orderbycontractnumber.select}]]></salesforce:salesforce-query>
             <salesforce:parameters><![CDATA[#[output application/java
 ---
 {
 	'contractnumber' : vars.queryparameters.contractnumber
 }]]]></salesforce:parameters>
         </salesforce:query>
-		<logger level="INFO" doc:name="Logger" doc:id="325ec47f-8ae7-4aab-a784-a89813e1f28e" message="#[output application/json --- vars.contractrecord]"/>
-		<choice doc:name="Choice" doc:id="9696d5cb-2888-44e0-8f7d-d4c860d9ea9a" >
-			<when expression="#[vars.contractrecord[0].Id != null]">
-				<ee:transform doc:name="create-order-for-contract-request" doc:id="a2430e47-941d-49e4-9db2-5522dc422d7d">
-		            <ee:message>
-						<ee:set-payload resource="dwl/create-order-for-contract-request.dwl" />
-		            </ee:message>
-        		</ee:transform>
- 				<salesforce:create type="Order" doc:name="CreateOrder" doc:id="f46aa9c8-861b-416d-b096-c9a0685998ed" config-ref="Salesforce_Config"/>
-			</when>
-			<otherwise >
-				<logger level="INFO" doc:name="Logger" doc:id="318ce8d8-16a8-4bde-b16c-b302812d70c4" message="#['Contract Record doesnot exists']"/>
-			</otherwise>
-		</choice>
-		<ee:transform doc:name="create-contract-for-account-response" doc:id="662d6197-6739-470c-8b35-e86a4b059073">
+		<ee:transform doc:name="get-order-by-contract-response" doc:id="662d6197-6739-470c-8b35-e86a4b059073">
             <ee:message>
-				<ee:set-payload resource="dwl/create-order-for-contract-response.dwl" />
+				<ee:set-payload resource="dwl/get-order-by-contract-response.dwl" />
             </ee:message>
         </ee:transform>
     </sub-flow>
@@ -264,4 +253,19 @@ payload.'contractnumber' default null
             </ee:message>
         </ee:transform>
     </sub-flow>
+	<sub-flow name="deleteordersSubFlow" doc:id="80c053eb-02a4-4d91-a21e-7b8d6efc9a05">
+        <ee:transform doc:name="delete-order-request" doc:id="a2327041-7226-43ba-b814-cef655b3cce4" >
+			<ee:message >
+				<ee:set-payload resource="dwl/delete-order-request.dwl" />
+			</ee:message>
+		</ee:transform>
+		 <salesforce:delete doc:name="delete-by-ids" doc:id="cc947b00-b692-4a7f-842e-6f33ee396da3" config-ref="Salesforce_Config">
+			<salesforce:ids ><![CDATA[#[payload]]]></salesforce:ids>
+		</salesforce:delete>
+		<ee:transform doc:name="delete-order-response">
+            <ee:message>
+				<ee:set-payload resource="dwl/delete-order-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
 </mule>
