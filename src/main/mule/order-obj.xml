@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+
+	<flow name="get:\order:estore-sfdc-system-api-config">
+        <ee:transform doc:name="queryparameters" doc:id="04756c81-515a-4509-b50f-6fd57a81e8a0" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="queryparameters" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"contractnumber": attributes.queryParams.'contractnumber' default null
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="get-contractorderSubFlow" doc:id="5be0f97b-af0d-4862-8f97-abdc767f2438" name="get-contractorderSubFlow"/>
+    </flow>
+	<flow name="post:\order:estore-sfdc-system-api-config">
+		<ee:transform doc:name="contractnumber and opportunityname" doc:id="ac2743ee-e717-495c-a277-d2292ac11b92" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="contractnumber" ><![CDATA[%dw 2.0
+output application/java
+---
+payload.'contractnumber' default null
+]]></ee:set-variable>
+				<ee:set-variable variableName="opportunityname" ><![CDATA[%dw 2.0
+				output application/java
+				---
+				payload.'opportunityname' default null
+				]]></ee:set-variable>			
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="create-contractorderSubFlow" doc:id="947ea84d-7d90-4440-9c0b-5484997c71f5" name="create-contractorderSubFlow"/>
+    </flow>
+   	<flow name="post:\deleteorders:application\json:estore-sfdc-system-api-config">
+		<flow-ref doc:name="deleteordersSubFlow" doc:id="ac584850-c585-4e34-a6eb-28f30dd41988" name="deleteordersSubFlow"/>
+    </flow>
+	<sub-flow name="get-contractorderSubFlow" doc:id="23f3efd1-184f-4f5a-a139-5e2437189e1b">
+		<salesforce:query doc:name="get-order-by-contractnumber" doc:id="05736405-5f26-4612-8cf9-8669ffdae201" config-ref="Salesforce_Config" target="orders">
+            <salesforce:salesforce-query><![CDATA[${orderbycontractnumber.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'contractnumber' : vars.queryparameters.contractnumber
+}]]]></salesforce:parameters>
+        </salesforce:query>
+		<ee:transform doc:name="get-order-by-contract-response" doc:id="706c2ace-3e96-4bad-8d3f-adb4d41ba540">
+            <ee:message>
+				<ee:set-payload resource="dwl/get-order-by-contract-response.dwl" />
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+	<sub-flow name="create-contractorderSubFlow" doc:id="dd8f1022-46f8-49db-ab38-16e7445967c5">
+		<salesforce:query doc:name="get-contract-by-contractnumber" doc:id="a51c4d71-a19f-4ebe-b242-99fab1d32072" config-ref="Salesforce_Config" target="contractrecord">
+            <salesforce:salesforce-query><![CDATA[${contractbycontractnumber.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'contractnumber' : vars.contractnumber
+}]]]></salesforce:parameters>
+        </salesforce:query>
+        		<salesforce:query doc:name="get-opportunity-by-name" doc:id="82d372c4-7fcc-4c62-86f8-970a609ac3d2" config-ref="Salesforce_Config" target="opportunityrecord">
+            <salesforce:salesforce-query><![CDATA[${opportunitybyname.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'opportunityname' : vars.opportunityname
+}]]]></salesforce:parameters>
+        </salesforce:query>
+		<choice doc:name="Choice" doc:id="cf82366e-1623-48f0-8eb3-2d307286a17c" >
+			<when expression="#[vars.contractrecord[0].Id != null and vars.opportunityrecord[0].Id != null and vars.opportunityrecord[0].Pricebook2Id != null]">
+				<ee:transform doc:name="create-order-for-contract-request" doc:id="34595159-177e-4fcb-a694-ec59aa154bf8">
+		            <ee:message>
+						<ee:set-payload resource="dwl/create-order-for-contract-request.dwl" />
+		            </ee:message>
+        		</ee:transform>
+ 				<salesforce:create type="Order" doc:name="CreateOrder" doc:id="4c4766d6-57ac-429a-a195-cd2b4b09e9ad" config-ref="Salesforce_Config"/>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="1c331e65-e5f3-47b0-91b3-96b5ee5b8b69" message="#['Either Contract, Opportunity or Pricebook for an opportunity doesnot exists']"/>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="create-contract-for-account-response" doc:id="31666068-8139-449e-b7e7-bae5ec6ab004">
+            <ee:message>
+				<ee:set-payload resource="dwl/create-order-for-contract-response.dwl" />
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+	<sub-flow name="deleteordersSubFlow" doc:id="ed8cb078-4465-48d2-b9af-da1a2320aa9c">
+        <ee:transform doc:name="delete-order-request" doc:id="2d2340ca-535f-4bea-85e8-60b534c5f580" >
+			<ee:message >
+				<ee:set-payload resource="dwl/delete-order-request.dwl" />
+			</ee:message>
+		</ee:transform>
+		 <salesforce:delete doc:name="delete-by-ids" doc:id="bdde390d-fe98-410f-8e1d-ebccc66e7fc1" config-ref="Salesforce_Config">
+			<salesforce:ids ><![CDATA[#[payload]]]></salesforce:ids>
+		</salesforce:delete>
+		<ee:transform doc:name="delete-order-response">
+            <ee:message>
+				<ee:set-payload resource="dwl/delete-order-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+</mule>

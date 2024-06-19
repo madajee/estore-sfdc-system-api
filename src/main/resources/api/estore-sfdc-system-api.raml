@@ -423,30 +423,31 @@ title: estore-sfdc-system-api
         200:
           body:
             application/json:
-    /order:
-      get:
-       queryParameters:
-        contractnumber:
-          description: contract number
-          type: string
-          required: true
-       description: get orders for the contracts
-       responses:
+/order:
+    get:
+     queryParameters:
+      contractnumber:
+        description: contract number
+        type: string
+        required: true
+     description: get orders for the contracts
+     responses:
+      200:
+        body:
+          application/json:
+    post:
+      description: create orders for the contract
+      body:
+          application/json:
+            example: |
+              {
+                  "contractnumber": "00000110",
+                  "opportunityname": "BSofSW - Ground-mounted Panels"
+              }
+      responses:
         200:
           body:
             application/json:
-      post:
-        description: create orders for the contract
-        body:
-            application/json:
-              example: |
-                {
-                    "contractnumber": "00000110",
-                }
-        responses:
-          200:
-            body:
-              application/json:
 /deletecontracts:
   post:
     description: delete contracts
