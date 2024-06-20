@@ -52,6 +52,14 @@ payload.'contractnumber' default null
         </ee:transform>
     	<flow-ref doc:name="create-orderproductSubFlow" doc:id="bb0ee07e-caf8-4636-a309-3bec3fc7e085" name="create-orderproductSubFlow"/>  
     </flow>
+    <flow name="post:\order\removeproduct:estore-sfdc-system-api-config">
+    	<ee:transform doc:name="var-ordernumber">
+            <ee:variables>
+                <ee:set-variable variableName="ordernumber">payload.ordernumber</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+    	<flow-ref doc:name="remove-orderproductSubFlow" doc:id="5a8b701c-abb7-43ea-adf5-616381099147" name="remove-orderproductSubFlow"/>  
+    </flow>
 	<sub-flow name="get-contractorderSubFlow" doc:id="23f3efd1-184f-4f5a-a139-5e2437189e1b">
 		<salesforce:query doc:name="get-order-by-contractnumber" doc:id="05736405-5f26-4612-8cf9-8669ffdae201" config-ref="Salesforce_Config" target="orders">
             <salesforce:salesforce-query><![CDATA[${orderbycontractnumber.select}]]></salesforce:salesforce-query>
@@ -163,6 +171,53 @@ payload.'contractnumber' default null
 		<ee:transform doc:name="cerate-order-product-response" doc:id="78c08daa-e71a-4f90-8ac4-2b4288cc4e56">
             <ee:message>
 				<ee:set-payload resource="dwl/create-order-product-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="remove-orderproductSubFlow" doc:id="a4b14070-53dc-4d7e-b456-7281ea08c7b1">
+		<salesforce:query doc:name="get-order-by-ordernumber" doc:id="2d2131da-9ecd-4be9-ab29-c39177e6f155" config-ref="Salesforce_Config" target="orderrecord">
+            <salesforce:salesforce-query><![CDATA[${orderbyordernumber.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'ordernumber' : vars.ordernumber
+}]]]></salesforce:parameters>
+        </salesforce:query>
+		<choice doc:name="Choice" doc:id="798e8db0-017a-42a4-923a-c1893004e2b2" >
+			<when expression="#[vars.orderrecord[0].Id != null]">
+				<ee:transform doc:name="retrieve-products-from-order-dynamicquery" doc:id="df37e9e9-20a3-4128-ab33-767f401f7804" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable resource="dwl/retrieve-products-from-order.dwl" variableName="dynamicquery" />
+					</ee:variables>
+				</ee:transform>
+				<salesforce:query doc:name="get-products-from-order" doc:id="9769177e-18bf-4d12-b359-b765bf061536" config-ref="Salesforce_Config" target="orderproduct">
+		            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query> 
+		        </salesforce:query>
+				<ee:transform doc:name="remove-order-product-request" doc:id="3e0af164-2466-44a9-b117-b6a88513b9dd" >
+					<ee:message >
+						<ee:set-payload resource="dwl/remove-order-product-request.dwl" />
+					</ee:message>
+				</ee:transform>
+				<choice doc:name="Choice" doc:id="8dc53613-3315-4074-aac1-ee1cbd2dc230" >
+					<when expression="#[payload[0] != null]">
+						<salesforce:delete doc:name="delete-by-ids" doc:id="843e1b79-1998-44d2-89b3-e49fc6a9c6b1" config-ref="Salesforce_Config">
+					<salesforce:ids><![CDATA[#[payload]]]></salesforce:ids>
+				</salesforce:delete>
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="Logger" doc:id="d323d2f2-3fdf-458d-bd26-1c6ea5d102c4" message="#['Either Order doesnt have order products or none of the order product in the request doesnt match on product code and quantity']"/>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="8b96a963-c5a3-4f5d-8c6a-6576b9303373" message="#['Opportunity Record doesnot exists']"/>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="remove-order-product-response" doc:id="ada242d6-06b2-42a0-9f0d-32f7aba8a596">
+            <ee:message>
+				<ee:set-payload resource="dwl/remove-order-product-response.dwl" />
             </ee:message>
         </ee:transform>
 	</sub-flow>
