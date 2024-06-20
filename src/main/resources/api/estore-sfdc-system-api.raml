@@ -448,6 +448,29 @@ title: estore-sfdc-system-api
         200:
           body:
             application/json:
+    /product:
+      post:
+        description: create opportunity product
+        body:
+            application/json:
+              example: |
+                    {
+                      "ordernumber": "00000108",
+                      "products": [
+                          {
+                            "productcode": "SPG-01",
+                            "quantity": 35
+                          },
+                          {
+                            "productcode": "SPG-02",
+                            "quantity": 20
+                          }
+                      ]
+                    }
+        responses:
+          200:
+            body:
+              application/json:
 /deletecontracts:
   post:
     description: delete contracts

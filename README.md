@@ -218,3 +218,73 @@ curl --location 'http://localhost:8081/api/deletequotes' \
     ],
     "callsource": "postman"
 }'
+
+*************** GET /contracts  ******************
+curl --location 'http://localhost:8081/api/account/contract?accountname=Boy%20Scouts%20of%20the%20Southwest'
+
+*************** GET /contracts  ******************
+curl --location 'http://localhost:8081/api/account/contract?accountname=Saito%20Family%20Laundromats'
+
+*************** Create /account/contracts  ******************
+curl --location 'http://localhost:8081/api/account/contract' \
+--header 'Content-Type: application/json' \
+--data '{
+    "accountname": "Boy Scouts of the Southwest",
+    "contracts": [
+        {
+            "contractstartdate": "07-02-2024",
+            "contractterm": "12"
+        }
+    ]
+}'
+
+*************** Delete /account/contracts  ******************
+curl --location 'http://localhost:8081/api/deletecontracts' \
+--header 'Content-Type: application/json' \
+--data '{
+    "contractidsfordelete": [
+        "800bm000007GXonAAG",
+        "800bm0000071qi6AAA"
+    ],
+    "callsource": "postman"
+}'
+
+*************** Get orders by contractnumber  ******************
+curl --location 'http://localhost:8081/api/order?contractnumber=00000110'
+
+*************** Create order for contract and opportunity  ******************
+curl --location 'http://localhost:8081/api/order' \
+--header 'Content-Type: application/json' \
+--data '{
+    "contractnumber": "00000110",
+    "opportunityname": "BSofSW - Ground-mounted Panels"
+}'
+
+*************** Delete orders  ******************
+curl --location 'http://localhost:8081/api/deleteorders' \
+--header 'Content-Type: application/json' \
+--data '{
+    "orderidsfordelete": [
+        "801bm00000DhN6lAAF",
+        "801bm00000DilrlAAB",
+        "801bm00000DgyDCAAZ"
+    ],
+    "callsource": "postman"
+}'
+
+*************** create-order-product  ******************
+curl --location 'http://localhost:8081/api/order/product' \
+--header 'Content-Type: application/json' \
+--data '{
+    "ordernumber": "00000110",
+    "products": [
+        {
+            "productcode": "SPG-01",
+            "quantity": 35
+        },
+        {
+            "productcode": "SPG-02",
+            "quantity": 20
+        }
+    ]
+}'

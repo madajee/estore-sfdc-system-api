@@ -44,6 +44,14 @@ payload.'contractnumber' default null
    	<flow name="post:\deleteorders:application\json:estore-sfdc-system-api-config">
 		<flow-ref doc:name="deleteordersSubFlow" doc:id="ac584850-c585-4e34-a6eb-28f30dd41988" name="deleteordersSubFlow"/>
     </flow>
+   <flow name="post:\order\product:estore-sfdc-system-api-config">
+    	 <ee:transform doc:name="var-ordernumber">
+            <ee:variables>
+                <ee:set-variable variableName="ordernumber">payload.ordernumber</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+    	<flow-ref doc:name="create-orderproductSubFlow" doc:id="bb0ee07e-caf8-4636-a309-3bec3fc7e085" name="create-orderproductSubFlow"/>  
+    </flow>
 	<sub-flow name="get-contractorderSubFlow" doc:id="23f3efd1-184f-4f5a-a139-5e2437189e1b">
 		<salesforce:query doc:name="get-order-by-contractnumber" doc:id="05736405-5f26-4612-8cf9-8669ffdae201" config-ref="Salesforce_Config" target="orders">
             <salesforce:salesforce-query><![CDATA[${orderbycontractnumber.select}]]></salesforce:salesforce-query>
@@ -107,6 +115,54 @@ payload.'contractnumber' default null
 		<ee:transform doc:name="delete-order-response">
             <ee:message>
 				<ee:set-payload resource="dwl/delete-order-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="create-orderproductSubFlow" doc:id="fa94032f-2eec-492a-b005-dc66a69990f1">
+		<salesforce:query doc:name="get-order-by-ordernumber" doc:id="8c63413d-1e6a-46d5-baa7-462feb40d242" config-ref="Salesforce_Config" target="orderrecord">
+            <salesforce:salesforce-query><![CDATA[${orderbyordernumber.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'ordernumber' : vars.ordernumber
+}]]]></salesforce:parameters>
+        </salesforce:query>
+		<choice doc:name="Choice" doc:id="a516f8c9-e4d8-4d3a-a256-15e00ea6cc21" >
+			<when expression="#[vars.orderrecord[0].Id != null]">
+		 		<ee:transform doc:name="get-products-by-productcodelist-dynamicquery-fororderproduct" doc:id="d64e92ba-5885-43c8-adec-22ab7267a7a8" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable resource="dwl/retrieve-productid-from-productcode-for-orderproduct.dwl" variableName="dynamicquery" />
+					</ee:variables>
+				</ee:transform>
+				<salesforce:query doc:name="get-product-by-productcode" doc:id="16f5f1a9-5c3a-4156-b68a-f99d73ba51b2" config-ref="Salesforce_Config" target="productlist">
+		            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query> 
+		        </salesforce:query>
+		        <ee:transform doc:name="get-pricebookentry-by-productcodelist-dynamicquery-fororderproduct" doc:id="4e848733-1831-4d22-8348-07b6241f9bb8" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable resource="dwl/retrieve-pricebookentry-from-productcode-for-orderproduct.dwl" variableName="dynamicquery" />
+					</ee:variables>
+				</ee:transform>
+				<salesforce:query doc:name="get-pricebookentry-by-productcode" doc:id="c469cd0e-7083-4c7a-86cb-bb24ac36d7c2" config-ref="Salesforce_Config" target="pricebookentrylist">
+		            <salesforce:salesforce-query><![CDATA[#[vars.dynamicquery.query]]]></salesforce:salesforce-query> 
+		        </salesforce:query>
+				<ee:transform doc:name="create-order-product-request" doc:id="fd2c1d62-be57-4e99-b6b5-c6e7d4b5ce42" >
+					<ee:message >
+						<ee:set-payload resource="dwl/create-order-product-request.dwl" />
+					</ee:message>
+				</ee:transform>
+				<salesforce:create type="OrderItem" doc:name="CreateOrderProduct" doc:id="b5e3787b-46bf-4fab-b8e9-0e612271bbc3" config-ref="Salesforce_Config"/>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="b6cedb43-6998-4a50-b25b-2547b15d8109" message="#['Opportunity Record doesnot exists or pricebookId is blank']"/>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="cerate-order-product-response" doc:id="78c08daa-e71a-4f90-8ac4-2b4288cc4e56">
+            <ee:message>
+				<ee:set-payload resource="dwl/create-order-product-response.dwl" />
             </ee:message>
         </ee:transform>
 	</sub-flow>

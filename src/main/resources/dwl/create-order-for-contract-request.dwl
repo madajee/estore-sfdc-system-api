@@ -8,5 +8,6 @@ output application/java
 	"ContractId": vars.contractrecord[0].Id,
 	"OpportunityId": vars.opportunityrecord[0].Id,
 	"Pricebook2Id": vars.opportunityrecord[0].Pricebook2Id,
+	"CurrencyIsoCode": vars.opportunityrecord[0].CurrencyIsoCode,
 	"Status": 'Draft'
 }]
