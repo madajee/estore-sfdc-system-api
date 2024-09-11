@@ -24,7 +24,9 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
  		<!-- <flow-ref doc:name="get-price-by-productcode-currencySubFlow" doc:id="44149926-e0c8-4e8b-bc93-75eb04fd8aeb" name="get-price-by-productcode-currencySubFlow"/> -->
     </flow>
    <flow name="post:\pricebookentry:application\json:estore-sfdc-system-api-config">
-		<flow-ref doc:name="create-pricebookentrySubFlow" doc:id="33e28cb6-9e51-45c0-96d9-fb77f394c5f2" name="create-pricebookentrySubFlow"/>
+		<foreach doc:name="For Each" doc:id="82c41dae-7297-47c4-8c4c-b0a4fedd670c" >
+			<flow-ref doc:name="create-pricebookentrySubFlow" doc:id="33e28cb6-9e51-45c0-96d9-fb77f394c5f2" name="create-pricebookentrySubFlow" />
+		</foreach>
 		<logger level="INFO" doc:name="Logger" doc:id="145ba1ec-4ff9-46c8-baad-12d3775bf5ac" message='#[output application/json --- {"message": "create pricebookentry"}]'/>
     </flow>
     <flow name="post:\deleteproducts:application\json:estore-sfdc-system-api-config">
@@ -143,7 +145,7 @@ output application/json
             <salesforce:parameters><![CDATA[#[output application/java
 ---
 {
-	'pricebookname' : payload[0].pricebookname
+	'pricebookname' : payload.pricebookname
 }]]]></salesforce:parameters>
         </salesforce:query>
 		<salesforce:query doc:name="get-product-by-productcode" doc:id="7376f143-87e8-4b15-bb08-e01052dfe7fe" config-ref="Salesforce_Config" target="productbyproductcode">
@@ -151,7 +153,7 @@ output application/json
             <salesforce:parameters><![CDATA[#[output application/java
 ---
 {
-	'productcode' : payload[0].productcode
+	'productcode' : payload.productcode
 }]]]></salesforce:parameters>
         </salesforce:query>
 		<ee:transform doc:name="create-pricebookentry-request" doc:id="156501b2-9253-4ed8-9ecc-ea4a2e3acae6" >

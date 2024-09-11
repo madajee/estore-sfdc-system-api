@@ -288,3 +288,15 @@ curl --location 'http://localhost:8081/api/order/product' \
         }
     ]
 }'
+*************** e2e steps  ******************
+1. Create Lead
+2. Create Product (Service Package and 2 Panels)
+3. Create Pricebook Entries for all 3 products with Standard Pricebook and all 5 currencies.
+4. Create pricebook entry for both the panel with Enterprise Price Book in JPY and SGD currency.
+5. Create pricebook entry for both the panel with Nonprofit Price Book in USD and GBP currency.
+6. Convert John Doe who works for ‘Boy Scouts of the Southwest’ by passing in opportunity name as ‘BSofSW - Ground-mounted Panels’. Validate that account, opportunity and contact is created through conver lead automation step.
+7. Convert Jane Doe who works for ‘Saito Family Laundromats’ by passing in opportunity name as ‘Saito - Ground-mounted Panels’. Validate that account, opportunity and contact is created through convert lead automation step.
+8. Update ‘BSofSW - Ground-mounted Panels’ opportunity with Nonprofit pricebook and opportunity amount of 20000 USD. Then use automation to add 20 quantity of GreenSun Ground to the opportunity. 
+9. Update account currency for ‘Saito Family Laundromats’ account to ‘JPY’. Then update ‘Saito - Ground-mounted Panels’ opportunity with Enterprise pricebook and opportunity amount of 4200000 JPY. Then use automation to add 35 quantity of SunPower ground and 20 quantity of GreenSun Ground to the opportunity.
+
+
