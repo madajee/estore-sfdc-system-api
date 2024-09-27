@@ -69,6 +69,14 @@ output application/json
         </ee:transform>
     	<flow-ref doc:name="create-opportunityquoteSubFlow" doc:id="85a59adb-fce8-4fb0-a5d5-431db0eba443" name="create-opportunityquoteSubFlow"/>  
     </flow>
+    <flow name="put:\opportunity\quote\(Id):estore-sfdc-system-api-config">
+ 		 <ee:transform doc:name="uri-params">
+            <ee:variables>
+                <ee:set-variable variableName="Id">attributes.uriParams.'Id'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+		<flow-ref doc:name="update-quote-by-idSubFlow" doc:id="ad04cbec-5b9e-457d-8b86-f52e47e8c1d8" name="update-quote-by-idSubFlow"/>
+    </flow>
     <flow name="post:\deletequotes:application\json:estore-sfdc-system-api-config">
 		<flow-ref doc:name="deletequotesSubFlow" doc:id="d0231105-af46-4a5f-8dcd-4b1df30a1efa" name="deletequotesSubFlow"/>
     </flow>
@@ -334,6 +342,44 @@ output application/json
 		<ee:transform doc:name="delete-quote-response">
             <ee:message>
 				<ee:set-payload resource="dwl/delete-quote-response.dwl" />
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="update-quote-by-idSubFlow" doc:id="68f6c410-e9a2-423b-a3cb-6fc1c6a404cc">
+		<salesforce:query doc:name="get-quote-by-id" doc:id="ba83eda5-54e0-428b-bb1f-7c694bd968c4" config-ref="Salesforce_Config" target="quoterecord">
+            <salesforce:salesforce-query><![CDATA[${quotebyid.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'Id' : vars.Id
+}]]]></salesforce:parameters>
+        </salesforce:query>
+        <choice doc:name="Choice" doc:id="414b1a04-34a0-43fb-8faf-d6350c5228da" >
+			<when expression="#[vars.quoterecord.Id?]">
+						<logger level="INFO" doc:name="Logger" doc:id="ed608741-cab0-4e63-b042-c720719744fb" message="#['Quote Record exists']" />
+				<salesforce:query doc:name="get-quotelineitem-by-productname" doc:id="d195ab4f-7d17-40cf-989e-c0e968957d5c" config-ref="Salesforce_Config" target="quotelineitemrecord">
+            <salesforce:salesforce-query><![CDATA[${quotelineitembyquoteidandproduct.select}]]></salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	'quoteid' : vars.quoterecord[0].Id,
+	'productname': payload.productname
+}]]]></salesforce:parameters>
+        </salesforce:query>
+				<ee:transform doc:name="update-quoteline-request" doc:id="47c2eea8-80da-4a30-91f5-a9339388c08f">
+            <ee:message>
+				<ee:set-payload resource="dwl/update-quoteline-request.dwl" />
+            </ee:message>
+        </ee:transform>
+				<salesforce:update type="QuoteLineItem" doc:name="update-opportunity" doc:id="f6d801ff-3655-406d-873d-3880ce8e0f06" config-ref="Salesforce_Config" />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="fc5a78c3-abb9-495e-a8c6-d6adad839736" message="#['Quote Record doesnot exists']"/>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="update-quoteline-response" doc:id="63c349a8-2aad-4c6f-8b30-af48ece07700">
+            <ee:message>
+				<ee:set-payload resource="dwl/update-quoteline-response.dwl" />
             </ee:message>
         </ee:transform>
 	</sub-flow>

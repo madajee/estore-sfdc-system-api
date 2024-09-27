@@ -354,6 +354,18 @@ title: estore-sfdc-system-api
         200:
           body:
             application/json:
+    /{Id}:
+     put:
+      description: update quote
+      body:
+          application/json:
+            example: |
+              {
+                  "quantity": 3,
+                  "discount": 10,
+                  "productname": "GreenSun Ground"
+              } 
+    
 /deletequotes:
   post:
     description: delete products
