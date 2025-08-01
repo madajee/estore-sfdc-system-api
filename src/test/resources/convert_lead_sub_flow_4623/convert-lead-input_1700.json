@@ -1,0 +1,6 @@
+{
+  "name": "John Doe",
+  "accountname": "Acme Corporation", 
+  "opportunityname": "Q2 Sales Opportunity",
+  "doNotCreateOpportunity": false
+}
